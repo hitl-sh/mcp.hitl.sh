@@ -96,48 +96,15 @@ export default function HomePage() {
     >
       <Snowfall />
 
-      <section
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          maxWidth: 960,
-          width: '100%',
-          background: 'rgba(255,255,255,0.6)',
-          backdropFilter: 'saturate(180%) blur(8px)',
-          WebkitBackdropFilter: 'saturate(180%) blur(8px)',
-          border: '1px solid rgba(12, 20, 40, 0.08)',
-          borderRadius: 16,
-          padding: '2rem',
-          boxShadow: '0 8px 30px rgba(30, 58, 138, 0.08)',
-        }}
-      >
-        <header style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.6 }}>HITL • MCP</div>
-          <h1
-            style={{
-              margin: '0.4rem 0 0',
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              lineHeight: 1.15,
-              background: 'linear-gradient(90deg, #0b1220 0%, #334155 50%, #0b1220 100%)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              color: 'transparent',
-            }}
-          >
-            Model Context Protocol for Human‑in‑the‑Loop
-          </h1>
-          <p style={{ margin: '0.75rem auto 0', maxWidth: 760, fontSize: '1.05rem', opacity: 0.75 }}>
-            A minimal, production‑ready MCP endpoint with typed operations for discovery and request lifecycle.
-          </p>
-        </header>
-
-        <div
+      <div
           style={{
             display: 'flex',
             justifyContent: 'center',
             gap: '0.75rem',
-            marginTop: '1.5rem',
+            marginTop: 0,
             flexWrap: 'wrap',
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           <Link
@@ -152,6 +119,7 @@ export default function HomePage() {
               color: '#ffffff',
               border: '1px solid rgba(0,0,0,0.1)',
               boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
+              textDecoration: 'none',
             }}
           >
             Open MCP Route
@@ -167,44 +135,12 @@ export default function HomePage() {
               background: 'white',
               color: '#0b1220',
               border: '1px solid rgba(12,20,40,0.12)',
+              textDecoration: 'none',
             }}
           >
             Well‑known Resource
           </Link>
         </div>
-      </section>
-
-      <footer
-        style={{
-          position: 'absolute',
-          bottom: 12,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          fontSize: 12,
-          color: 'rgba(11,18,32,0.55)',
-          zIndex: 2,
-        }}
-      >
-        <span>© {new Date().getFullYear()} HITL MCP</span>
-      </footer>
     </main>
-  );
-}
-
-function Card({ title, body }: { title: string; body: string }) {
-  return (
-    <div
-      style={{
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8))',
-        border: '1px solid rgba(12,20,40,0.08)',
-        borderRadius: 12,
-        padding: '1rem',
-        boxShadow: '0 4px 18px rgba(30,58,138,0.06)',
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>{title}</div>
-      <div style={{ opacity: 0.7 }}>{body}</div>
-    </div>
   );
 }
