@@ -6,6 +6,7 @@ type AuthInfo = {
   clientId: string;
   scopes: string[];
   extra?: Record<string, unknown>;
+  
 };
 
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
