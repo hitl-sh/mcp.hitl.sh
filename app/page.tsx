@@ -172,28 +172,6 @@ export default function HomePage() {
             Well‑known Resource
           </Link>
         </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1rem',
-            marginTop: '2rem',
-          }}
-        >
-          <Card
-            title="Authentication"
-            body="Use a Bearer token via the Authorization header when calling the MCP route."
-          />
-          <Card
-            title="Capabilities"
-            body="Discovery plus request lifecycle operations: create, list, get, update, delete, cancel, feedback."
-          />
-          <Card
-            title="Design"
-            body="Consistent, typed responses optimized for reliable agent consumption."
-          />
-        </div>
       </section>
 
       <footer
