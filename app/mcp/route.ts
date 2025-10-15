@@ -251,14 +251,16 @@ function normalizeEnvelope<T>(envelope: HitlApiEnvelope<T>) {
 }
 
 function formatContent(payload: unknown) {
-  return {
+  const resp = {
     content: [
       {
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify(payload, null, 2),
       },
     ],
-  };
+  } as const;
+  // Cast to the generic MCP tool response shape expected by mcp-handler
+  return resp as unknown as { [x: string]: unknown; content: unknown[] };
 }
 
 function normalizeError(error: unknown): Error {
@@ -276,13 +278,67 @@ const authCache = new Map<
   { authInfo: AuthInfo; expiresAt: number }
 >();
 
+// Zod raw shapes expected by mcp-handler
+type ZRS = Record<string, z.ZodTypeAny>;
+const listLoopsShape: ZRS = {};
+const createRequestShape = {
+  loop_id: z.string().min(1, "Loop ID is required"),
+  processing_type: z.enum(["time-sensitive", "deferred"]),
+  type: z.enum(["markdown", "image"]),
+  priority: z.enum(["low", "medium", "high", "critical"]),
+  request_text: z.string().min(1).max(2_000),
+  timeout_seconds: z.number().int().positive().optional(),
+  response_type: z.enum([
+    "single_select",
+    "multi_select",
+    "rating",
+    "text",
+    "number",
+  ]),
+  response_config: z.record(z.unknown()),
+  default_response: z.unknown().optional(),
+  platform: z.string().optional(),
+  image_url: z.string().url().optional(),
+  context: z.record(z.unknown()).optional(),
+  callback_url: z.string().url().optional(),
+  tags: z.array(z.string()).optional(),
+} satisfies ZRS;
+
+const listRequestsShape = {
+  status: z.enum(["pending", "claimed", "completed", "timeout", "cancelled"]).optional(),
+  priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+  loop_id: z.string().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).optional(),
+  sort: z.enum(["created_at_desc", "created_at_asc", "priority_desc", "status_asc"]).optional(),
+} satisfies ZRS;
+
+const requestIdShape = {
+  request_id: z.string().min(1, "request_id is required"),
+} satisfies ZRS;
+
+const updateRequestShape = {
+  request_id: z.string().min(1, "request_id is required"),
+  updates: createRequestFieldsSchema.partial(),
+} satisfies ZRS;
+
+const cancelRequestShape = {
+  request_id: z.string().min(1, "request_id is required"),
+  reason: z.string().min(1).max(1_000).optional(),
+} satisfies ZRS;
+
+const addFeedbackShape = {
+  request_id: z.string().min(1, "request_id is required"),
+  feedback: feedbackSchema,
+} satisfies ZRS;
+
 const baseHandler = createMcpHandler(
   async (server) => {
     server.tool(
       "list_loops",
       TOOL_METADATA.list_loops.description,
-      z.object({}).strict(),
-      async (_input, extra) => {
+      listLoopsShape,
+      (async (_input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
           const response = await client.getLoops();
@@ -295,17 +351,19 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "create_request",
       TOOL_METADATA.create_request.description,
-      createRequestInputSchema,
-      async (input, extra) => {
+      createRequestShape,
+      (async (input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
-          const { loop_id, ...payload } = input;
+          // Re-validate with full schema to enforce superRefine rules
+          const parsed = createRequestInputSchema.parse(input);
+          const { loop_id, ...payload } = parsed as any;
           if (!payload.platform) {
             payload.platform = "api";
           }
@@ -321,19 +379,18 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "list_requests",
       TOOL_METADATA.list_requests.description,
-      listRequestsInputSchema,
-      async (input, extra) => {
+      listRequestsShape,
+      (async (input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
-          const response = await client.listRequests(
-            input as ListRequestsParams,
-          );
+          const validated = listRequestsInputSchema.parse(input) as ListRequestsParams;
+          const response = await client.listRequests(validated);
           const envelope = normalizeEnvelope(response);
           return formatContent({
             message: envelope.msg,
@@ -347,14 +404,14 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "get_request",
       TOOL_METADATA.get_request.description,
-      requestIdSchema,
-      async ({ request_id }, extra) => {
+      requestIdShape,
+      (async ({ request_id }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
           const response = await client.getRequest(request_id);
@@ -366,19 +423,20 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "update_request",
       TOOL_METADATA.update_request.description,
-      updateRequestInputSchema,
-      async ({ request_id, updates }, extra) => {
+      updateRequestShape,
+      (async ({ request_id, updates }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
+          const parsed = updateRequestInputSchema.parse({ request_id, updates });
           const response = await client.updateRequest(
-            request_id,
-            updates as UpdateRequestPayload,
+            parsed.request_id,
+            parsed.updates as UpdateRequestPayload,
           );
           const envelope = normalizeEnvelope(response);
           return formatContent({
@@ -388,14 +446,14 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "delete_request",
       TOOL_METADATA.delete_request.description,
-      requestIdSchema,
-      async ({ request_id }, extra) => {
+      requestIdShape,
+      (async ({ request_id }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
           const response = await client.deleteRequest(request_id);
@@ -407,14 +465,14 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "cancel_request",
       TOOL_METADATA.cancel_request.description,
-      cancelRequestInputSchema,
-      async ({ request_id, reason }, extra) => {
+      cancelRequestShape,
+      (async ({ request_id, reason }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
           const payload: CancelRequestPayload | undefined = reason
@@ -429,18 +487,19 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
 
     server.tool(
       "add_request_feedback",
       TOOL_METADATA.add_request_feedback.description,
-      addFeedbackInputSchema,
-      async ({ request_id, feedback }, extra) => {
+      addFeedbackShape,
+      (async ({ request_id, feedback }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
-          const response = await client.addRequestFeedback(request_id, {
-            feedback,
+          const validated = addFeedbackInputSchema.parse({ request_id, feedback });
+          const response = await client.addRequestFeedback(validated.request_id, {
+            feedback: validated.feedback,
           } as FeedbackPayload);
           const envelope = normalizeEnvelope(response);
           return formatContent({
@@ -450,7 +509,7 @@ const baseHandler = createMcpHandler(
         } catch (error) {
           throw normalizeError(error);
         }
-      },
+      }) as any,
     );
   },
   {
