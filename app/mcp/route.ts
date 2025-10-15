@@ -1,4 +1,13 @@
-import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import { AsyncLocalStorage } from "node:async_hooks";
+
+/* Local structural AuthInfo type to avoid deep import path issues */
+type AuthInfo = {
+  token: string;
+  clientId: string;
+  scopes: string[];
+  extra?: Record<string, unknown>;
+};
+
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import { z } from "zod";
 
@@ -51,8 +60,16 @@ const TOOL_METADATA = {
 const USER_AGENT = "hitl-mcp-server/0.1.0";
 const AUTH_CACHE_TTL_MS = 5 * 60 * 1000;
 
+const authStorage = new AsyncLocalStorage<AuthInfo | undefined>();
+
 type ToolExtra = {
   authInfo?: AuthInfo;
+  requestInfo?: {
+    headers?:
+      | Headers
+      | Record<string, string | string[] | undefined>
+      | undefined;
+  };
 };
 
 const createRequestFieldsSchema = z.object({
@@ -154,18 +171,71 @@ const addFeedbackInputSchema = requestIdSchema.extend({
   feedback: feedbackSchema,
 });
 
-function ensureAuthenticated(extra: ToolExtra): AuthInfo {
-  const authInfo = extra.authInfo;
-  if (!authInfo?.token) {
+function parseBearer(value: string | undefined | null): string | undefined {
+  if (!value) return undefined;
+  const [type, token] = value.trim().split(" ");
+  if (type?.toLowerCase() !== "bearer" || !token) {
+    return undefined;
+  }
+  return token;
+}
+
+function extractBearerFromHeaders(
+  headers:
+    | Headers
+    | Record<string, string | string[] | undefined>
+    | undefined,
+): string | undefined {
+  if (!headers) return undefined;
+
+  if (headers instanceof Headers) {
+    const value =
+      headers.get("authorization") ?? headers.get("Authorization") ?? undefined;
+    return parseBearer(value);
+  }
+
+  const headerValue =
+    (headers["authorization"] ??
+      headers["Authorization"] ??
+      headers["AUTHORIZATION"]) ?? undefined;
+
+  if (Array.isArray(headerValue)) {
+    return parseBearer(headerValue[0]);
+  }
+
+  return parseBearer(headerValue);
+}
+
+async function resolveAuthInfo(extra?: ToolExtra): Promise<AuthInfo> {
+  const contextualAuth = authStorage.getStore();
+  if (contextualAuth?.token) {
+    return contextualAuth;
+  }
+
+  if (extra?.authInfo?.token) {
+    return extra.authInfo;
+  }
+
+  const tokenFromHeaders = extractBearerFromHeaders(
+    extra?.requestInfo?.headers,
+  );
+
+  if (!tokenFromHeaders) {
     throw new Error(
       "Authentication is required. Provide a valid HITL.sh API key.",
     );
   }
+
+  const authInfo = await getAuthInfoForToken(tokenFromHeaders);
+  if (!authInfo?.token) {
+    throw new Error("Authentication failed. Verify the HITL.sh API key.");
+  }
+
   return authInfo;
 }
 
-function createClient(extra: ToolExtra) {
-  const authInfo = ensureAuthenticated(extra);
+async function createClient(extra?: ToolExtra) {
+  const authInfo = await resolveAuthInfo(extra);
   return {
     client: createHitlClient(authInfo.token, { userAgent: USER_AGENT }),
     authInfo,
@@ -205,7 +275,7 @@ const authCache = new Map<
   { authInfo: AuthInfo; expiresAt: number }
 >();
 
-const handler = createMcpHandler(
+const baseHandler = createMcpHandler(
   async (server) => {
     server.tool(
       "list_loops",
@@ -213,7 +283,7 @@ const handler = createMcpHandler(
       z.object({}).strict(),
       async (_input, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const response = await client.getLoops();
           const envelope = normalizeEnvelope(response);
           return formatContent({
@@ -233,7 +303,7 @@ const handler = createMcpHandler(
       createRequestInputSchema,
       async (input, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const { loop_id, ...payload } = input;
           if (!payload.platform) {
             payload.platform = "api";
@@ -259,7 +329,7 @@ const handler = createMcpHandler(
       listRequestsInputSchema,
       async (input, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const response = await client.listRequests(
             input as ListRequestsParams,
           );
@@ -285,7 +355,7 @@ const handler = createMcpHandler(
       requestIdSchema,
       async ({ request_id }, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const response = await client.getRequest(request_id);
           const envelope = normalizeEnvelope(response);
           return formatContent({
@@ -304,7 +374,7 @@ const handler = createMcpHandler(
       updateRequestInputSchema,
       async ({ request_id, updates }, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const response = await client.updateRequest(
             request_id,
             updates as UpdateRequestPayload,
@@ -326,7 +396,7 @@ const handler = createMcpHandler(
       requestIdSchema,
       async ({ request_id }, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const response = await client.deleteRequest(request_id);
           const envelope = normalizeEnvelope(response);
           return formatContent({
@@ -345,7 +415,7 @@ const handler = createMcpHandler(
       cancelRequestInputSchema,
       async ({ request_id, reason }, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const payload: CancelRequestPayload | undefined = reason
             ? { reason }
             : undefined;
@@ -367,7 +437,7 @@ const handler = createMcpHandler(
       addFeedbackInputSchema,
       async ({ request_id, feedback }, extra) => {
         try {
-          const { client } = createClient(extra);
+          const { client } = await createClient(extra);
           const response = await client.addRequestFeedback(request_id, {
             feedback,
           } as FeedbackPayload);
@@ -404,13 +474,13 @@ const handler = createMcpHandler(
   },
 );
 
-const verifyToken = async (
-  _req: Request,
+const handler = (req: Request) =>
+  authStorage.run((req as { auth?: AuthInfo }).auth, () => baseHandler(req));
+
+async function getAuthInfoForToken(
   bearerToken?: string,
-): Promise<AuthInfo | undefined> => {
-  if (!bearerToken) {
-    return undefined;
-  }
+): Promise<AuthInfo | undefined> {
+  if (!bearerToken) return undefined;
 
   const cached = authCache.get(bearerToken);
   if (cached && cached.expiresAt > Date.now()) {
@@ -451,6 +521,13 @@ const verifyToken = async (
     console.error("Failed to validate HITL API key", error);
     return undefined;
   }
+}
+
+const verifyToken = async (
+  _req: Request,
+  bearerToken?: string,
+): Promise<AuthInfo | undefined> => {
+  return getAuthInfoForToken(bearerToken);
 };
 
 const authHandler = withMcpAuth(handler, verifyToken, {
