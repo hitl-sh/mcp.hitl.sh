@@ -14,7 +14,6 @@ Once the user is authenticated, the server will allow the user access to the fol
 6. Cancel Request in Loop
 7. Add Request Feedback in Loop
 
-
 0. Get List of Loops
 curl -X GET https://api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here"
