@@ -336,8 +336,8 @@ const baseHandler = createMcpHandler(
   async (server) => {
     server.tool(
       "list_loops",
-      TOOL_METADATA.list_loops.description,
       listLoopsShape,
+      { title: TOOL_METADATA.list_loops.description },
       (async (_input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -356,8 +356,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "create_request",
-      TOOL_METADATA.create_request.description,
       createRequestShape,
+      { title: TOOL_METADATA.create_request.description },
       (async (input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -384,8 +384,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "list_requests",
-      TOOL_METADATA.list_requests.description,
       listRequestsShape,
+      { title: TOOL_METADATA.list_requests.description },
       (async (input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -409,8 +409,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "get_request",
-      TOOL_METADATA.get_request.description,
       requestIdShape,
+      { title: TOOL_METADATA.get_request.description },
       (async ({ request_id }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -428,8 +428,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "update_request",
-      TOOL_METADATA.update_request.description,
       updateRequestShape,
+      { title: TOOL_METADATA.update_request.description },
       (async ({ request_id, updates }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -451,8 +451,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "delete_request",
-      TOOL_METADATA.delete_request.description,
       requestIdShape,
+      { title: TOOL_METADATA.delete_request.description },
       (async ({ request_id }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -470,8 +470,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "cancel_request",
-      TOOL_METADATA.cancel_request.description,
       cancelRequestShape,
+      { title: TOOL_METADATA.cancel_request.description },
       (async ({ request_id, reason }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -492,8 +492,8 @@ const baseHandler = createMcpHandler(
 
     server.tool(
       "add_request_feedback",
-      TOOL_METADATA.add_request_feedback.description,
       addFeedbackShape,
+      { title: TOOL_METADATA.add_request_feedback.description },
       (async ({ request_id, feedback }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
