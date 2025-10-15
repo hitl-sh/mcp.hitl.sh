@@ -1,0 +1,71 @@
+MCP Server for HITL.sh
+
+This is an MCP server for Human in the loop operations. Simple the user connects to the server.
+Authenticates using their API Key provided in the Dashboard of hitl.sh (my.hitl.sh). 
+
+Once the user is authenticated, the server will allow the user access to the following tools:
+
+0. Get List of Loops
+1. New Request to Loop
+2. List Requests in Loop
+3. Delete Request in Loop
+4. Update Request in Loop
+5. Get Request in Loop
+6. Cancel Request in Loop
+7. Add Request Feedback in Loop
+
+
+0. Get List of Loops
+curl -X GET https://api.hitl.sh/v1/api/loops \
+  -H "Authorization: Bearer your_api_key_here"
+
+1. New Request to Loop
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review this content",
+    "timeout_seconds": 1800,
+    "response_type": "single_select",
+    "response_config": {
+      "options": [
+        {"value": "approve", "label": "Approve"},
+        {"value": "reject", "label": "Reject"}
+      ],
+      "required": true
+    },
+    "default_response": "reject",
+    "platform": "api"
+  }'
+
+2. List Requests in Loop
+curl -X GET https://api.hitl.sh/v1/api/requests \
+  -H "Authorization: Bearer your_api_key_here"
+
+3. Get Request in Loop
+curl -X GET https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348 \
+  -H "Authorization: Bearer your_api_key_here"
+
+4. Delete Request in Loop
+curl -X DELETE https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348 \
+  -H "Authorization: Bearer your_api_key_here"
+
+5. Add Request Feedback in Loop
+curl -X POST https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348/feedback \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "feedback": {
+      "rating": 5,
+      "comment": "Excellent review! Very thorough analysis and quick turnaround time.",
+      "accuracy": 5,
+      "timeliness": 5,
+      "helpfulness": 4,
+      "would_recommend": true,
+      "tags": ["thorough", "quick", "professional"],
+      "category": "positive"
+    }
+  }'
