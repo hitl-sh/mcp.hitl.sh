@@ -22,7 +22,12 @@ export async function verifyAuth0Token(
   req: Request,
   bearerToken?: string
 ): Promise<ExtendedAuthInfo | undefined> {
+  console.log("verifyAuth0Token called");
+  console.log("bearerToken provided:", !!bearerToken);
+  console.log("bearerToken length:", bearerToken?.length);
+
   if (!bearerToken) {
+    console.error("No bearer token provided");
     return undefined;
   }
 
@@ -38,7 +43,9 @@ export async function verifyAuth0Token(
     // Decode the token to check the actual issuer
     const parts = bearerToken.split(".");
     if (parts.length !== 3) {
-      console.error("Invalid JWT format");
+      console.error("Invalid JWT format - expected 3 parts, got:", parts.length);
+      console.error("Token preview (first 50 chars):", bearerToken.substring(0, 50));
+      console.error("Token parts:", parts.map(p => p.substring(0, 20)));
       return undefined;
     }
 
