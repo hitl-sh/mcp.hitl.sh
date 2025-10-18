@@ -150,86 +150,6 @@ function WireframeOrb() {
   );
 }
 
-function Snowfall() {
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const animationRef = React.useRef<number | null>(null);
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current!;
-    const maybeCtx = canvas.getContext('2d');
-    if (!maybeCtx) return;
-    const ctx = maybeCtx;
-
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
-
-    function onResize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', onResize);
-
-    const flakes = Array.from({ length: Math.max(60, Math.floor((width * height) / 60000)) }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: 0.6 + Math.random() * 1.2,
-      s: 0.15 + Math.random() * 0.35,
-      w: Math.random() * 1.2,
-      o: 0.15 + Math.random() * 0.35,
-    }));
-
-    const bg = ctx.createRadialGradient(width * 0.5, height * -0.2, 0, width * 0.5, height, Math.max(width, height));
-    bg.addColorStop(0, 'rgba(255,255,255,0.0)');
-    bg.addColorStop(1, 'rgba(255,255,255,0.0)');
-
-    function frame(t: number) {
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, width, height);
-      ctx.save();
-      ctx.fillStyle = 'rgba(120,140,180,0.35)';
-
-      for (const f of flakes) {
-        f.y += f.s;
-        f.x += Math.sin((t * 0.0008 + f.y) * 0.6) * 0.2 + f.w * 0.05;
-        if (f.y > height + 5) {
-          f.y = -10;
-          f.x = Math.random() * width;
-        }
-        ctx.globalAlpha = f.o;
-        ctx.beginPath();
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      ctx.restore();
-      animationRef.current = requestAnimationFrame(frame);
-    }
-
-    animationRef.current = requestAnimationFrame(frame);
-
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      window.removeEventListener('resize', onResize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 1,
-      }}
-    />
-  );
-}
-
 export default function HomePage() {
   return (
     <main
@@ -242,53 +162,59 @@ export default function HomePage() {
       }}
     >
       <WireframeOrb />
-      <Snowfall />
-
       <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '0.75rem',
+          marginTop: 0,
+          flexWrap: 'wrap',
+          position: 'relative',
+          zIndex: 2,
+        }}
+      >
+        <Link
+          href="/mcp"
           style={{
-            display: 'flex',
+            display: 'inline-flex',
+            alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.75rem',
-            marginTop: 0,
-            flexWrap: 'wrap',
-            position: 'relative',
-            zIndex: 2,
+            padding: '0.7rem 1rem',
+            borderRadius: 10,
+            background: '#111827',
+            color: '#ffffff',
+            border: '1px solid rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
+            textDecoration: 'none',
           }}
         >
-          <Link
-            href="/mcp"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0.7rem 1rem',
-              borderRadius: 10,
-              background: '#111827',
-              color: '#ffffff',
-              border: '1px solid rgba(0,0,0,0.1)',
-              boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
-              textDecoration: 'none',
-            }}
-          >
-            Open MCP Route
-          </Link>
-          <Link
-            href="/.well-known/oauth-protected-resource"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0.7rem 1rem',
-              borderRadius: 10,
-              background: 'white',
-              color: '#0b1220',
-              border: '1px solid rgba(12,20,40,0.12)',
-              textDecoration: 'none',
-            }}
-          >
-            Well‑known Resource
-          </Link>
-        </div>
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, opacity: 0.9 }}>
+            <path d="M12 2l1.8 3.6L18 7l-3.2 2.4L13.8 13 12 9.6 10.2 13l-1-3.6L6 7l4.2-1.4L12 2z"/>
+            <circle cx="12" cy="12" r="9" style={{ opacity: 0.25 }}></circle>
+          </svg>
+          <span>Open MCP Route</span>
+        </Link>
+        <Link
+          href="/.well-known/oauth-protected-resource"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.7rem 1rem',
+            borderRadius: 10,
+            background: 'white',
+            color: '#0b1220',
+            border: '1px solid rgba(12,20,40,0.12)',
+            textDecoration: 'none',
+          }}
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, opacity: 0.9 }}>
+            <path d="M12 2l7 4v5c0 5-3.5 9-7 11-3.5-2-7-6-7-11V6l7-4z"></path>
+            <path d="M9.5 12.5l2 2 3-3"></path>
+          </svg>
+          <span>Well‑known Resource</span>
+        </Link>
+      </div>
     </main>
   );
 }
