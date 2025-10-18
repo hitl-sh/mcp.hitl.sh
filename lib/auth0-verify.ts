@@ -1,5 +1,18 @@
 import { jwtVerify, createRemoteJWKSet } from "jose";
-import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+
+/**
+ * Extended AuthInfo type that includes JWT claims and subject
+ * This is compatible with MCP SDK's AuthInfo but adds extra fields we need
+ */
+export type ExtendedAuthInfo = {
+  type: "oauth";
+  token: string;
+  clientId: string;
+  scopes: string[];
+  claims?: Record<string, unknown>;
+  subject?: string;
+  extra?: Record<string, unknown>;
+};
 
 /**
  * Verifies an Auth0 JWT token and returns auth info
@@ -8,7 +21,7 @@ import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 export async function verifyAuth0Token(
   req: Request,
   bearerToken?: string
-): Promise<AuthInfo | undefined> {
+): Promise<ExtendedAuthInfo | undefined> {
   if (!bearerToken) {
     return undefined;
   }
@@ -51,13 +64,18 @@ export async function verifyAuth0Token(
       audience: audience,
     });
 
-    // Return auth info with scopes and claims
+    // Return auth info with JWT claims and subject
     return {
       type: "oauth",
-      accessToken: bearerToken,
+      token: bearerToken,
+      clientId: verifiedPayload.azp as string || verifiedPayload.aud as string || "",
       scopes: (verifiedPayload.scope as string)?.split(" ") || [],
-      subject: verifiedPayload.sub || "",
       claims: verifiedPayload,
+      subject: verifiedPayload.sub,
+      extra: {
+        audience: verifiedPayload.aud,
+        issuer: verifiedPayload.iss,
+      },
     };
   } catch (error) {
     console.error("Error verifying token:", error);
