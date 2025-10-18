@@ -146,6 +146,7 @@ After deploying and adding environment variables:
 curl https://your-app.vercel.app/.well-known/oauth-protected-resource
 ```
 
+
 Expected response:
 ```json
 {
