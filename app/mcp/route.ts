@@ -573,9 +573,8 @@ async function getAuthInfoForToken(
 }
 
 // Use Auth0 OAuth verification for authentication
-// OAuth is optional - if no token provided, uses shared HITL_API_KEY from environment
 const authHandler = withMcpAuth(handler, verifyAuth0Token, {
-  required: false,  // Set to true to enforce OAuth authentication
+  required: true,  // OAuth authentication is required
   // Optional: specify required scopes
   // requiredScopes: ["read:loops", "write:requests"],
 });
