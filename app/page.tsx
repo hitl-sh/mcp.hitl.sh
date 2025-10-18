@@ -164,56 +164,124 @@ export default function HomePage() {
       <WireframeOrb />
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '0.75rem',
-          marginTop: 0,
-          flexWrap: 'wrap',
+          maxWidth: '42rem',
+          textAlign: 'center',
           position: 'relative',
           zIndex: 2,
         }}
       >
-        <Link
-          href="/mcp"
+        <h1
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.7rem 1rem',
-            borderRadius: 10,
-            background: '#111827',
-            color: '#ffffff',
-            border: '1px solid rgba(0,0,0,0.1)',
-            boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
-            textDecoration: 'none',
+            fontSize: '2.5rem',
+            fontWeight: 700,
+            marginBottom: '1rem',
+            color: '#111827',
           }}
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, opacity: 0.9 }}>
-            <path d="M12 2l1.8 3.6L18 7l-3.2 2.4L13.8 13 12 9.6 10.2 13l-1-3.6L6 7l4.2-1.4L12 2z"/>
-            <circle cx="12" cy="12" r="9" style={{ opacity: 0.25 }}></circle>
-          </svg>
-          <span>Open MCP Route</span>
-        </Link>
-        <Link
-          href="/.well-known/oauth-protected-resource"
+          HITL.sh MCP Server
+        </h1>
+        <p
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.7rem 1rem',
-            borderRadius: 10,
-            background: 'white',
-            color: '#0b1220',
-            border: '1px solid rgba(12,20,40,0.12)',
-            textDecoration: 'none',
+            fontSize: '1.125rem',
+            color: '#6b7280',
+            marginBottom: '2rem',
+            lineHeight: 1.6,
           }}
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, opacity: 0.9 }}>
-            <path d="M12 2l7 4v5c0 5-3.5 9-7 11-3.5-2-7-6-7-11V6l7-4z"></path>
-            <path d="M9.5 12.5l2 2 3-3"></path>
-          </svg>
-          <span>Well‑known Resource</span>
-        </Link>
+          Connect HITL.sh Human-in-the-Loop tools to ChatGPT and other AI applications.
+          Create review requests, gather feedback, and integrate human judgment into your AI workflows.
+        </p>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
+            marginBottom: '2rem',
+          }}
+        >
+          <Link
+            href="/setup-api-key"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.875rem 1.5rem',
+              borderRadius: 10,
+              background: '#111827',
+              color: '#ffffff',
+              border: '1px solid rgba(0,0,0,0.1)',
+              boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+            }}
+          >
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}>
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+            <span>Setup API Key</span>
+          </Link>
+          <a
+            href="https://github.com/your-repo/mcp-hitl"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.875rem 1.5rem',
+              borderRadius: 10,
+              background: 'white',
+              color: '#111827',
+              border: '1px solid rgba(12,20,40,0.12)',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+            }}
+          >
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}>
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+            </svg>
+            <span>Documentation</span>
+          </a>
+        </div>
+
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.8)',
+            border: '1px solid rgba(0,0,0,0.08)',
+            borderRadius: 12,
+            padding: '1.5rem',
+            textAlign: 'left',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '1.125rem',
+              fontWeight: 600,
+              marginBottom: '0.75rem',
+              color: '#111827',
+            }}
+          >
+            Quick Start for ChatGPT
+          </h2>
+          <ol
+            style={{
+              listStyle: 'decimal',
+              paddingLeft: '1.5rem',
+              margin: 0,
+              color: '#4b5563',
+              lineHeight: 1.8,
+            }}
+          >
+            <li>Add MCP connector in ChatGPT with URL: <code style={{ background: '#f3f4f6', padding: '0.125rem 0.375rem', borderRadius: 4, fontSize: '0.875rem' }}>https://mcp.hitl.sh/mcp</code></li>
+            <li>Sign up through OAuth (create account with email/password)</li>
+            <li>Visit <Link href="/setup-api-key" style={{ color: '#2563eb', textDecoration: 'underline' }}>Setup API Key</Link> to add your personal HITL.sh API key</li>
+            <li>Start using HITL tools in ChatGPT!</li>
+          </ol>
+        </div>
       </div>
     </main>
   );

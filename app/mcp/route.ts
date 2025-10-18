@@ -230,27 +230,37 @@ async function resolveAuthInfo(extra?: ToolExtra): Promise<AuthInfo> {
 
 async function createClient(extra?: ToolExtra) {
   // Try to get HITL API key from user's OAuth claims first (per-user key)
-  // Fall back to environment variable (shared key)
   // Check both namespaced and non-namespaced claims
   let hitlApiKey =
     (extra?.authInfo?.claims?.['https://mcp.hitl.sh/hitl_api_key'] as string | undefined) ||
     (extra?.authInfo?.claims?.hitl_api_key as string | undefined);
 
   if (!hitlApiKey) {
-    // Fall back to shared API key from environment
+    // No personal key - check for shared fallback
     hitlApiKey = process.env.HITL_API_KEY;
-  }
 
-  if (!hitlApiKey) {
-    throw new Error(
-      "HITL API key not found. Either set HITL_API_KEY environment variable " +
-      "or include 'hitl_api_key' in your OAuth token claims."
-    );
+    if (!hitlApiKey) {
+      // NO KEY AT ALL - show helpful error with setup instructions
+      throw new Error(
+        "⚠️ HITL API Key Required\n\n" +
+        "Please add your HITL.sh API key to use this service:\n\n" +
+        "1. Visit: https://mcp.hitl.sh/setup-api-key\n" +
+        "2. Log in with your ChatGPT credentials\n" +
+        "3. Enter your HITL API key\n" +
+        "4. Reconnect in ChatGPT\n\n" +
+        "Get your API key at: https://hitl.sh/dashboard"
+      );
+    }
+
+    // Using shared fallback key
+    console.log("Using shared HITL_API_KEY from environment (user has no personal key)");
+  } else {
+    // Using user's personal key
+    console.log("Using user's personal HITL API key from OAuth claims");
   }
 
   return {
     client: createHitlClient(hitlApiKey, { userAgent: USER_AGENT }),
-    // OAuth auth info is available in extra.context.authInfo if needed
     authInfo: extra?.authInfo,
   };
 }

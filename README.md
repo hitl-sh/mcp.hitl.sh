@@ -2,7 +2,22 @@
 
 Production-ready Model Context Protocol (MCP) server that exposes HITL.sh Human-in-the-Loop tools for AI applications. Built with Next.js and deployed on Vercel.
 
-## 🚀 Features
+## 🚀 Quick Start for Users
+
+**Want to use this in ChatGPT?** See the [User Guide](USER_GUIDE.md) for step-by-step instructions!
+
+### For ChatGPT Users:
+
+1. **Add MCP Connector** in ChatGPT with URL: `https://mcp.hitl.sh/mcp`
+2. **Sign up** through the OAuth flow
+3. **(Optional)** Add your personal HITL API key at: `https://mcp.hitl.sh/setup-api-key`
+4. **Start using HITL tools!** Ask ChatGPT to create review requests, list loops, etc.
+
+---
+
+## 🛠️ For Developers
+
+### Features
 
 - **OAuth 2.1 Authentication** - Secure OAuth flow with Auth0 integration
 - **Per-User API Keys** - Users can configure their own HITL.sh API keys
