@@ -25,6 +25,12 @@ function handler(req: NextRequest) {
     resourceUrl: resourceUrl,
   });
 
+  // Add client_id if configured (for ChatGPT to use pre-configured client)
+  // This prevents ChatGPT from using dynamic client registration
+  if (process.env.AUTH0_CHATGPT_CLIENT_ID) {
+    (metadata as any).client_id = process.env.AUTH0_CHATGPT_CLIENT_ID;
+  }
+
   return new Response(JSON.stringify(metadata), {
     status: 200,
     headers: {

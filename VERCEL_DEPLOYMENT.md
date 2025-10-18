@@ -83,6 +83,19 @@ AUTH0_MANAGEMENT_CLIENT_SECRET
 
 ---
 
+### 5. ChatGPT OAuth Client (Optional but Recommended)
+
+```
+AUTH0_CHATGPT_CLIENT_ID
+```
+**Value**: `[Create a new SPA client in Auth0 and paste the Client ID here]`
+
+**Description**: Pre-configured first-party client for ChatGPT (prevents dynamic client registration)
+
+**Setup Instructions**: See [FIX_CHATGPT_OAUTH.md](FIX_CHATGPT_OAUTH.md) for step-by-step guide
+
+---
+
 ## 🎯 Quick Copy-Paste Table
 
 For each variable, copy the **Key** and **Value**:
@@ -183,11 +196,12 @@ Should complete successfully ✅
 
 ## 📊 Environment Variables Summary
 
-**Total**: 7 required variables
+**Total**: 7-8 variables
 
 - ✅ HITL.sh: 1 variable (API key)
 - ✅ Auth0 OAuth: 2 variables (issuer, audience)
 - ✅ Auth0 Testing: 2 variables (client ID/secret)
 - ✅ Auth0 Management: 2 variables (management client ID/secret)
+- ✅ ChatGPT OAuth: 1 variable (optional but recommended)
 
 **All set!** 🎉 Your app is ready for production deployment.
