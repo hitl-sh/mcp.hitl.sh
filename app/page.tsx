@@ -3,68 +3,134 @@
 import Link from 'next/link';
 import React from 'react';
 
-function Snowfall() {
+function WireframeOrb() {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const animationRef = React.useRef<number | null>(null);
+  const rafRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     const canvas = canvasRef.current!;
-    const maybeCtx = canvas.getContext('2d');
-    if (!maybeCtx) return;
-    const ctx = maybeCtx;
+    const context = canvas.getContext('2d') as CanvasRenderingContext2D | null;
+    if (!context) return;
+    const ctx: CanvasRenderingContext2D = context;
 
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let width = 0;
+    let height = 0;
+    let dpr = Math.min(2, window.devicePixelRatio || 1);
 
-    function onResize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    window.addEventListener('resize', onResize);
+    resize();
+    window.addEventListener('resize', resize);
 
-    const flakes = Array.from({ length: Math.max(60, Math.floor((width * height) / 60000)) }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: 0.6 + Math.random() * 1.2,
-      s: 0.15 + Math.random() * 0.35,
-      w: Math.random() * 1.2,
-      o: 0.15 + Math.random() * 0.35,
-    }));
+    const FOV = 520; // perspective
+    const center = () => ({ cx: width / 2, cy: height / 2 });
 
-    const bg = ctx.createRadialGradient(width * 0.5, height * -0.2, 0, width * 0.5, height, Math.max(width, height));
-    bg.addColorStop(0, 'rgba(255,255,255,0.0)');
-    bg.addColorStop(1, 'rgba(255,255,255,0.0)');
+    function rotateX(p: [number, number, number], a: number) {
+      const [x, y, z] = p;
+      const s = Math.sin(a), c = Math.cos(a);
+      return [x, y * c - z * s, y * s + z * c] as [number, number, number];
+    }
+
+    function rotateY(p: [number, number, number], a: number) {
+      const [x, y, z] = p;
+      const s = Math.sin(a), c = Math.cos(a);
+      return [x * c + z * s, y, -x * s + z * c] as [number, number, number];
+    }
+
+    function project(p: [number, number, number]) {
+      const { cx, cy } = center();
+      const [x, y, z] = p;
+      const s = FOV / (FOV + z);
+      return [cx + x * s, cy + y * s] as [number, number];
+    }
+
+    function torus(u: number, v: number, R: number, r: number) {
+      const cu = Math.cos(u), su = Math.sin(u);
+      const cv = Math.cos(v), sv = Math.sin(v);
+      const x = (R + r * cv) * cu;
+      const y = (R + r * cv) * su;
+      const z = r * sv;
+      return [x, y, z] as [number, number, number];
+    }
+
+    const U = 52;
+    const V = 26;
 
     function frame(t: number) {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, width, height);
-      ctx.save();
-      ctx.fillStyle = 'rgba(120,140,180,0.35)';
 
-      for (const f of flakes) {
-        f.y += f.s;
-        f.x += Math.sin((t * 0.0008 + f.y) * 0.6) * 0.2 + f.w * 0.05;
-        if (f.y > height + 5) {
-          f.y = -10;
-          f.x = Math.random() * width;
-        }
-        ctx.globalAlpha = f.o;
+      // subtle backdrop vignette
+      const g = ctx.createRadialGradient(
+        width * 0.5,
+        height * 0.5,
+        0,
+        width * 0.5,
+        height * 0.5,
+        Math.max(width, height) * 0.75
+      );
+      g.addColorStop(0, 'rgba(14,18,34,0.10)');
+      g.addColorStop(1, 'rgba(14,18,34,0.0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, width, height);
+
+      const base = Math.min(width, height) * 0.28;
+      const R = base * 1.0;
+      const r = base * 0.42;
+
+      const a = t * 0.00035;
+      const b = t * 0.00022;
+
+      ctx.lineWidth = 1.0;
+      ctx.strokeStyle = 'rgba(120,160,255,0.18)';
+
+      // draw longitudinal lines (constant u)
+      for (let i = 0; i < U; i++) {
+        const u = (i / U) * Math.PI * 2;
         ctx.beginPath();
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-        ctx.fill();
+        for (let j = 0; j <= V; j++) {
+          const v = (j / V) * Math.PI * 2;
+          let p = torus(u, v, R, r);
+          p = rotateX(p, a);
+          p = rotateY(p, b);
+          const [sx, sy] = project(p);
+          if (j === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
       }
 
-      ctx.restore();
-      animationRef.current = requestAnimationFrame(frame);
+      // draw latitudinal lines (constant v)
+      for (let j = 0; j < V; j++) {
+        const v = (j / V) * Math.PI * 2;
+        ctx.beginPath();
+        for (let i = 0; i <= U; i++) {
+          const u = (i / U) * Math.PI * 2;
+          let p = torus(u, v, R, r);
+          p = rotateX(p, a);
+          p = rotateY(p, b);
+          const [sx, sy] = project(p);
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      }
+
+      rafRef.current = requestAnimationFrame(frame);
     }
 
-    animationRef.current = requestAnimationFrame(frame);
-
+    rafRef.current = requestAnimationFrame(frame);
     return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      window.removeEventListener('resize', onResize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', resize);
     };
   }, []);
 
@@ -77,7 +143,8 @@ function Snowfall() {
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 1,
+        zIndex: 0,
+        opacity: 0.9,
       }}
     />
   );
@@ -94,53 +161,60 @@ export default function HomePage() {
         position: 'relative',
       }}
     >
-      <Snowfall />
-
+      <WireframeOrb />
       <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '0.75rem',
+          marginTop: 0,
+          flexWrap: 'wrap',
+          position: 'relative',
+          zIndex: 2,
+        }}
+      >
+        <Link
+          href="/mcp"
           style={{
-            display: 'flex',
+            display: 'inline-flex',
+            alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.75rem',
-            marginTop: 0,
-            flexWrap: 'wrap',
-            position: 'relative',
-            zIndex: 2,
+            padding: '0.7rem 1rem',
+            borderRadius: 10,
+            background: '#111827',
+            color: '#ffffff',
+            border: '1px solid rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
+            textDecoration: 'none',
           }}
         >
-          <Link
-            href="/mcp"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0.7rem 1rem',
-              borderRadius: 10,
-              background: '#111827',
-              color: '#ffffff',
-              border: '1px solid rgba(0,0,0,0.1)',
-              boxShadow: '0 1px 0 rgba(255,255,255,0.2) inset',
-              textDecoration: 'none',
-            }}
-          >
-            Open MCP Route
-          </Link>
-          <Link
-            href="/.well-known/oauth-protected-resource"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0.7rem 1rem',
-              borderRadius: 10,
-              background: 'white',
-              color: '#0b1220',
-              border: '1px solid rgba(12,20,40,0.12)',
-              textDecoration: 'none',
-            }}
-          >
-            Well‑known Resource
-          </Link>
-        </div>
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, opacity: 0.9 }}>
+            <path d="M12 2l1.8 3.6L18 7l-3.2 2.4L13.8 13 12 9.6 10.2 13l-1-3.6L6 7l4.2-1.4L12 2z"/>
+            <circle cx="12" cy="12" r="9" style={{ opacity: 0.25 }}></circle>
+          </svg>
+          <span>Open MCP Route</span>
+        </Link>
+        <Link
+          href="/.well-known/oauth-protected-resource"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.7rem 1rem',
+            borderRadius: 10,
+            background: 'white',
+            color: '#0b1220',
+            border: '1px solid rgba(12,20,40,0.12)',
+            textDecoration: 'none',
+          }}
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, opacity: 0.9 }}>
+            <path d="M12 2l7 4v5c0 5-3.5 9-7 11-3.5-2-7-6-7-11V6l7-4z"></path>
+            <path d="M9.5 12.5l2 2 3-3"></path>
+          </svg>
+          <span>Well‑known Resource</span>
+        </Link>
+      </div>
     </main>
   );
 }
