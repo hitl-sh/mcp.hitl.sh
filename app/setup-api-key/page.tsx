@@ -28,20 +28,25 @@ export default function SetupApiKey() {
     setCheckingAuth(false);
   }, []);
 
-  const handleLogin = () => {
-    const auth0Domain = 'https://dev-b6psakqdctan3n61.us.auth0.com';
-    const clientId = 'wNyfQ04waGbVrbmXI0juIRgoWD1SJ5Uq'; // Your ChatGPT Auth0 SPA client
-    const redirectUri = encodeURIComponent(window.location.href);
-    const audience = encodeURIComponent('https://mcp.hitl.sh');
+  const handleLogin = async () => {
+    // Fetch Auth0 config from the server to avoid hardcoding
+    try {
+      const response = await fetch('/api/auth/config');
+      const config = await response.json();
 
-    const authUrl = `${auth0Domain}/authorize?` +
-      `response_type=token&` +
-      `client_id=${clientId}&` +
-      `redirect_uri=${redirectUri}&` +
-      `audience=${audience}&` +
-      `scope=openid profile email`;
+      const redirectUri = encodeURIComponent(window.location.href);
 
-    window.location.href = authUrl;
+      const authUrl = `${config.issuerUrl}/authorize?` +
+        `response_type=token&` +
+        `client_id=${config.clientId}&` +
+        `redirect_uri=${redirectUri}&` +
+        `audience=${encodeURIComponent(config.audience)}&` +
+        `scope=openid profile email`;
+
+      window.location.href = authUrl;
+    } catch (error) {
+      setError('Failed to initiate login. Please try again.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
