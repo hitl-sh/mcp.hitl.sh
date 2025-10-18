@@ -1,0 +1,30 @@
+# Development and testing files
+scripts/test-*.mjs
+scripts/stdio-wrapper.mjs
+scripts/stdio-server.mjs
+scripts/mcp-client-wrapper.mjs
+scripts/test-streamable-http-client.mjs
+
+# Documentation (keep in repo, but don't deploy)
+AUTH0_CODE_CHANGES.md
+AUTH0_SETUP_CHECKLIST.md
+IMPORTANT_AUTH_NOTES.md
+CHATGPT_DCR_WORKAROUND.md
+OAUTH_SETUP_COMPLETE.md
+CHATGPT_OAUTH_SETUP.md
+NGROK_CHATGPT_SETUP.md
+USER_API_KEY_SETUP.md
+PER_USER_API_KEY_SETUP.md
+PRODUCTION_CLEANUP.md
+
+# Local environment
+.env.local
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

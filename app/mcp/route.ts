@@ -15,13 +15,13 @@ import { z } from "zod";
 import {
   HitlApiError,
   createHitlClient,
-  type CancelRequestPayload,
   type CreateRequestPayload,
   type FeedbackPayload,
   type HitlApiEnvelope,
   type ListRequestsParams,
   type UpdateRequestPayload,
 } from "@/lib/hitl-client";
+import { verifyAuth0Token } from "@/lib/auth0-verify";
 
 const TOOL_METADATA = {
   list_loops: {
@@ -44,13 +44,9 @@ const TOOL_METADATA = {
     description:
       "Update mutable fields of a request, such as text, priority, or configuration.",
   },
-  delete_request: {
-    description:
-      "Permanently delete a request. Only allowed for requests owned by the API key.",
-  },
   cancel_request: {
     description:
-      "Cancel a pending or claimed request so it stops processing.",
+      "Cancel a pending or claimed request by deleting it. This sets the request status to 'cancelled'.",
   },
   add_request_feedback: {
     description:
@@ -87,7 +83,7 @@ const createRequestFieldsSchema = z.object({
     "number",
   ]),
   response_config: z.record(z.unknown()),
-  default_response: z.unknown().optional(),
+  default_response: z.unknown(),
   platform: z.string().default("api").optional(),
   image_url: z.string().url().optional(),
   context: z.record(z.unknown()).optional(),
@@ -144,10 +140,6 @@ const updateRequestInputSchema = z.object({
       (value) => Object.keys(value).length > 0,
       "Provide at least one field to update",
     ),
-});
-
-const cancelRequestInputSchema = requestIdSchema.extend({
-  reason: z.string().min(1).max(1_000).optional(),
 });
 
 const feedbackSchema = z
@@ -236,10 +228,29 @@ async function resolveAuthInfo(extra?: ToolExtra): Promise<AuthInfo> {
 }
 
 async function createClient(extra?: ToolExtra) {
-  const authInfo = await resolveAuthInfo(extra);
+  // Try to get HITL API key from user's OAuth claims first (per-user key)
+  // Fall back to environment variable (shared key)
+  // Check both namespaced and non-namespaced claims
+  let hitlApiKey =
+    (extra?.authInfo?.claims?.['https://mcp.hitl.sh/hitl_api_key'] as string | undefined) ||
+    (extra?.authInfo?.claims?.hitl_api_key as string | undefined);
+
+  if (!hitlApiKey) {
+    // Fall back to shared API key from environment
+    hitlApiKey = process.env.HITL_API_KEY;
+  }
+
+  if (!hitlApiKey) {
+    throw new Error(
+      "HITL API key not found. Either set HITL_API_KEY environment variable " +
+      "or include 'hitl_api_key' in your OAuth token claims."
+    );
+  }
+
   return {
-    client: createHitlClient(authInfo.token, { userAgent: USER_AGENT }),
-    authInfo,
+    client: createHitlClient(hitlApiKey, { userAgent: USER_AGENT }),
+    // OAuth auth info is available in extra.context.authInfo if needed
+    authInfo: extra?.authInfo,
   };
 }
 
@@ -296,7 +307,7 @@ const createRequestShape = {
     "number",
   ]),
   response_config: z.record(z.unknown()),
-  default_response: z.unknown().optional(),
+  default_response: z.unknown(),
   platform: z.string().optional(),
   image_url: z.string().url().optional(),
   context: z.record(z.unknown()).optional(),
@@ -324,7 +335,6 @@ const updateRequestShape = {
 
 const cancelRequestShape = {
   request_id: z.string().min(1, "request_id is required"),
-  reason: z.string().min(1).max(1_000).optional(),
 } satisfies ZRS;
 
 const addFeedbackShape = {
@@ -337,7 +347,7 @@ const baseHandler = createMcpHandler(
     server.tool(
       "list_loops",
       listLoopsShape,
-      { title: TOOL_METADATA.list_loops.description },
+      { description: TOOL_METADATA.list_loops.description },
       (async (_input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -357,7 +367,7 @@ const baseHandler = createMcpHandler(
     server.tool(
       "create_request",
       createRequestShape,
-      { title: TOOL_METADATA.create_request.description },
+      { description: TOOL_METADATA.create_request.description },
       (async (input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -385,7 +395,7 @@ const baseHandler = createMcpHandler(
     server.tool(
       "list_requests",
       listRequestsShape,
-      { title: TOOL_METADATA.list_requests.description },
+      { description: TOOL_METADATA.list_requests.description },
       (async (input: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -410,7 +420,7 @@ const baseHandler = createMcpHandler(
     server.tool(
       "get_request",
       requestIdShape,
-      { title: TOOL_METADATA.get_request.description },
+      { description: TOOL_METADATA.get_request.description },
       (async ({ request_id }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -429,7 +439,7 @@ const baseHandler = createMcpHandler(
     server.tool(
       "update_request",
       updateRequestShape,
-      { title: TOOL_METADATA.update_request.description },
+      { description: TOOL_METADATA.update_request.description },
       (async ({ request_id, updates }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -450,35 +460,13 @@ const baseHandler = createMcpHandler(
     );
 
     server.tool(
-      "delete_request",
-      requestIdShape,
-      { title: TOOL_METADATA.delete_request.description },
+      "cancel_request",
+      cancelRequestShape,
+      { description: TOOL_METADATA.cancel_request.description },
       (async ({ request_id }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
-          const response = await client.deleteRequest(request_id);
-          const envelope = normalizeEnvelope(response);
-          return formatContent({
-            message: envelope.msg,
-            data: envelope.data,
-          });
-        } catch (error) {
-          throw normalizeError(error);
-        }
-      }) as any,
-    );
-
-    server.tool(
-      "cancel_request",
-      cancelRequestShape,
-      { title: TOOL_METADATA.cancel_request.description },
-      (async ({ request_id, reason }: any, extra: any) => {
-        try {
-          const { client } = await createClient(extra);
-          const payload: CancelRequestPayload | undefined = reason
-            ? { reason }
-            : undefined;
-          const response = await client.cancelRequest(request_id, payload);
+          const response = await client.cancelRequest(request_id);
           const envelope = normalizeEnvelope(response);
           return formatContent({
             message: envelope.msg,
@@ -493,7 +481,7 @@ const baseHandler = createMcpHandler(
     server.tool(
       "add_request_feedback",
       addFeedbackShape,
-      { title: TOOL_METADATA.add_request_feedback.description },
+      { description: TOOL_METADATA.add_request_feedback.description },
       (async ({ request_id, feedback }: any, extra: any) => {
         try {
           const { client } = await createClient(extra);
@@ -583,15 +571,11 @@ async function getAuthInfoForToken(
   }
 }
 
-const verifyToken = async (
-  _req: Request,
-  bearerToken?: string,
-): Promise<AuthInfo | undefined> => {
-  return getAuthInfoForToken(bearerToken);
-};
-
-const authHandler = withMcpAuth(handler, verifyToken, {
+// Use Auth0 OAuth verification for authentication
+const authHandler = withMcpAuth(handler, verifyAuth0Token, {
   required: true,
+  // Optional: specify required scopes
+  // requiredScopes: ["read:loops", "write:requests"],
 });
 
 export { authHandler as GET, authHandler as POST, authHandler as DELETE };

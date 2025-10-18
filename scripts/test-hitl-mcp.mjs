@@ -55,7 +55,7 @@ async function main() {
   const tools = await client.listTools();
   console.log(
     "Available tools:",
-    tools.tools?.map((tool) => `${tool.name} – ${tool.description ?? ""}`),
+    tools.tools?.map((tool) => `${tool.name} – ${tool.description ?? tool.annotations?.description ?? ""}`),
   );
 
   const loops = await client.callTool({

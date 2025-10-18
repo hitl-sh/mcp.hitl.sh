@@ -60,7 +60,7 @@ export interface CreateRequestPayload {
   timeout_seconds?: number;
   response_type: HitlResponseType;
   response_config: Record<string, unknown>;
-  default_response?: unknown;
+  default_response: unknown;
   platform?: string;
   image_url?: string;
   context?: Record<string, unknown>;
@@ -84,10 +84,6 @@ export interface ListRequestsParams {
     | "created_at_asc"
     | "priority_desc"
     | "status_asc";
-}
-
-export interface CancelRequestPayload {
-  reason?: string;
 }
 
 export interface FeedbackPayload {
@@ -237,29 +233,13 @@ export class HitlClient {
     );
   }
 
-  async deleteRequest(
+  async cancelRequest(
     requestId: string
   ): Promise<HitlApiEnvelope<Record<string, unknown>>> {
     return this.request<HitlApiEnvelope<Record<string, unknown>>>(
       `api/requests/${requestId}`,
       {
         method: "DELETE",
-      }
-    );
-  }
-
-  async cancelRequest(
-    requestId: string,
-    payload: CancelRequestPayload = {}
-  ): Promise<HitlApiEnvelope<Record<string, unknown>>> {
-    return this.request<HitlApiEnvelope<Record<string, unknown>>>(
-      `api/requests/${requestId}/cancel`,
-      {
-        method: "POST",
-        body:
-          payload && Object.keys(payload).length > 0
-            ? JSON.stringify(payload)
-            : undefined,
       }
     );
   }
