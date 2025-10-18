@@ -3,6 +3,153 @@
 import Link from 'next/link';
 import React from 'react';
 
+function WireframeOrb() {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const rafRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current!;
+    const context = canvas.getContext('2d') as CanvasRenderingContext2D | null;
+    if (!context) return;
+    const ctx: CanvasRenderingContext2D = context;
+
+    let width = 0;
+    let height = 0;
+    let dpr = Math.min(2, window.devicePixelRatio || 1);
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    const FOV = 520; // perspective
+    const center = () => ({ cx: width / 2, cy: height / 2 });
+
+    function rotateX(p: [number, number, number], a: number) {
+      const [x, y, z] = p;
+      const s = Math.sin(a), c = Math.cos(a);
+      return [x, y * c - z * s, y * s + z * c] as [number, number, number];
+    }
+
+    function rotateY(p: [number, number, number], a: number) {
+      const [x, y, z] = p;
+      const s = Math.sin(a), c = Math.cos(a);
+      return [x * c + z * s, y, -x * s + z * c] as [number, number, number];
+    }
+
+    function project(p: [number, number, number]) {
+      const { cx, cy } = center();
+      const [x, y, z] = p;
+      const s = FOV / (FOV + z);
+      return [cx + x * s, cy + y * s] as [number, number];
+    }
+
+    function torus(u: number, v: number, R: number, r: number) {
+      const cu = Math.cos(u), su = Math.sin(u);
+      const cv = Math.cos(v), sv = Math.sin(v);
+      const x = (R + r * cv) * cu;
+      const y = (R + r * cv) * su;
+      const z = r * sv;
+      return [x, y, z] as [number, number, number];
+    }
+
+    const U = 52;
+    const V = 26;
+
+    function frame(t: number) {
+      ctx.clearRect(0, 0, width, height);
+
+      // subtle backdrop vignette
+      const g = ctx.createRadialGradient(
+        width * 0.5,
+        height * 0.5,
+        0,
+        width * 0.5,
+        height * 0.5,
+        Math.max(width, height) * 0.75
+      );
+      g.addColorStop(0, 'rgba(14,18,34,0.10)');
+      g.addColorStop(1, 'rgba(14,18,34,0.0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, width, height);
+
+      const base = Math.min(width, height) * 0.28;
+      const R = base * 1.0;
+      const r = base * 0.42;
+
+      const a = t * 0.00035;
+      const b = t * 0.00022;
+
+      ctx.lineWidth = 1.0;
+      ctx.strokeStyle = 'rgba(120,160,255,0.18)';
+
+      // draw longitudinal lines (constant u)
+      for (let i = 0; i < U; i++) {
+        const u = (i / U) * Math.PI * 2;
+        ctx.beginPath();
+        for (let j = 0; j <= V; j++) {
+          const v = (j / V) * Math.PI * 2;
+          let p = torus(u, v, R, r);
+          p = rotateX(p, a);
+          p = rotateY(p, b);
+          const [sx, sy] = project(p);
+          if (j === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      }
+
+      // draw latitudinal lines (constant v)
+      for (let j = 0; j < V; j++) {
+        const v = (j / V) * Math.PI * 2;
+        ctx.beginPath();
+        for (let i = 0; i <= U; i++) {
+          const u = (i / U) * Math.PI * 2;
+          let p = torus(u, v, R, r);
+          p = rotateX(p, a);
+          p = rotateY(p, b);
+          const [sx, sy] = project(p);
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      }
+
+      rafRef.current = requestAnimationFrame(frame);
+    }
+
+    rafRef.current = requestAnimationFrame(frame);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 0,
+        opacity: 0.9,
+      }}
+    />
+  );
+}
+
 function Snowfall() {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const animationRef = React.useRef<number | null>(null);
@@ -94,6 +241,7 @@ export default function HomePage() {
         position: 'relative',
       }}
     >
+      <WireframeOrb />
       <Snowfall />
 
       <div
