@@ -4,14 +4,29 @@ Production-ready Model Context Protocol (MCP) server that exposes HITL.sh Human-
 
 ## 🚀 Quick Start for Users
 
-**Want to use this in ChatGPT?** See the [User Guide](USER_GUIDE.md) for step-by-step instructions!
+Choose the endpoint that matches your platform:
 
-### For ChatGPT Users:
+### For ChatGPT Users (OAuth):
 
-1. **Add MCP Connector** in ChatGPT with URL: `https://mcp.hitl.sh/mcp`
+**URL**: `https://mcp.hitl.sh/mcp`
+
+1. **Add MCP Connector** in ChatGPT with URL above
 2. **Sign up** through the OAuth flow
 3. **(Optional)** Add your personal HITL API key at: `https://mcp.hitl.sh/setup-api-key`
-4. **Start using HITL tools!** Ask ChatGPT to create review requests, list loops, etc.
+4. **Start using HITL tools!**
+
+📚 [Full ChatGPT Guide](USER_GUIDE.md)
+
+### For OpenAI Agent Builder / Zapier / Make.com (Direct API Key):
+
+**URL**: `https://mcp.hitl.sh/mcp-simple`
+
+1. **Add MCP Server** with URL above
+2. **Authentication**: Bearer Token
+3. **Token**: Your HITL API key (e.g., `hitl_live_abc123...`)
+4. **Start using HITL tools!**
+
+📚 [Full OpenAI Agent Builder Guide](OPENAI_AGENT_BUILDER_GUIDE.md)
 
 ---
 

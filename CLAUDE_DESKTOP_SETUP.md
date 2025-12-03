@@ -53,7 +53,7 @@ If testing locally (server running on `localhost:3002`):
       "url": "http://localhost:3002/mcp",
       "transport": "streamableHttp",
       "headers": {
-        "Authorization": "Bearer hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b"
+        "Authorization": "Bearer YOUR_HITL_API_KEY_HERE"
       }
     }
   }
@@ -76,7 +76,7 @@ If testing against a deployed server (e.g., Vercel):
       "url": "https://your-app.vercel.app/mcp",
       "transport": "streamableHttp",
       "headers": {
-        "Authorization": "Bearer hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b"
+        "Authorization": "Bearer YOUR_HITL_API_KEY_HERE"
       }
     }
   }
@@ -94,14 +94,14 @@ You can configure both:
       "url": "http://localhost:3002/mcp",
       "transport": "streamableHttp",
       "headers": {
-        "Authorization": "Bearer hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b"
+        "Authorization": "Bearer YOUR_HITL_API_KEY_HERE"
       }
     },
     "hitl-production": {
       "url": "https://your-app.vercel.app/mcp",
       "transport": "streamableHttp",
       "headers": {
-        "Authorization": "Bearer hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b"
+        "Authorization": "Bearer YOUR_HITL_API_KEY_HERE"
       }
     }
   }
@@ -208,7 +208,7 @@ Expected: Claude will use `add_request_feedback`.
 3. Test the endpoint manually:
    ```bash
    curl -X POST http://localhost:3002/mcp \
-     -H "Authorization: Bearer hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b" \
+     -H "Authorization: Bearer YOUR_HITL_API_KEY_HERE" \
      -H "Content-Type: application/json" \
      -H "Accept: application/json, text/event-stream" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
@@ -229,7 +229,7 @@ Expected: Claude will use `add_request_feedback`.
 3. Clear Claude Desktop cache and restart
 4. Verify the MCP handler is working:
    ```bash
-   node scripts/test-hitl-mcp.mjs http://localhost:3002/mcp hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b
+   node scripts/test-hitl-mcp.mjs http://localhost:3002/mcp YOUR_HITL_API_KEY_HERE
    ```
 
 ## Advanced Configuration
@@ -255,7 +255,7 @@ Instead of hardcoding the API key, you can use environment variables:
 Then set the environment variable:
 ```bash
 # macOS/Linux - Add to ~/.zshrc or ~/.bashrc
-export HITL_API_KEY="hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b"
+export HITL_API_KEY="YOUR_HITL_API_KEY_HERE"
 
 # Restart Claude Desktop from terminal with env vars loaded
 ```
