@@ -1,6 +1,6 @@
 # HITL.sh MCP Server
 
-Production-ready Model Context Protocol (MCP) server that exposes HITL.sh Human-in-the-Loop tools for AI applications. Built with Next.js and deployed on Vercel.
+HITL.sh is a mobile-powered Human-in-the-Loop platform designed to give AI systems instant access to real human judgment. The entire system is built around our dedicated mobile app, which is required for the product to function and enables human reviewers to receive and complete tasks in real time.
 
 ## 🚀 Quick Start for Users
 
