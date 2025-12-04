@@ -205,7 +205,7 @@ async function validateApiKeyAuth(req: Request): Promise<string> {
       "⚠️ HITL API Key Required\n\n" +
       "Please provide your HITL.sh API key in the Authorization header:\n" +
       "Authorization: Bearer hitl_live_your_api_key\n\n" +
-      "Get your API key at: https://hitl.sh/dashboard"
+      "Get your API key at: https://my.hitl.sh/dashboard"
     );
   }
 
@@ -216,7 +216,7 @@ async function validateApiKeyAuth(req: Request): Promise<string> {
     throw new Error(
       "⚠️ Invalid HITL API Key Format\n\n" +
       "API key must start with 'hitl_live_' or 'hitl_test_'\n\n" +
-      "Get your API key at: https://hitl.sh/dashboard"
+      "Get your API key at: https://my.hitl.sh/dashboard"
     );
   }
 

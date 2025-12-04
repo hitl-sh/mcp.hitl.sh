@@ -248,7 +248,7 @@ async function createClient(extra?: ToolExtra) {
         "2. Log in with your ChatGPT credentials\n" +
         "3. Enter your HITL API key\n" +
         "4. Reconnect in ChatGPT\n\n" +
-        "Get your API key at: https://hitl.sh/dashboard"
+        "Get your API key at: https://my.hitl.sh/dashboard"
       );
     }
 

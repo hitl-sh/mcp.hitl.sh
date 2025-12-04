@@ -169,7 +169,7 @@ This simple endpoint (`/mcp-simple`) differs from the OAuth endpoint (`/mcp`):
 ### Revoke Access
 
 To revoke access:
-1. Go to [HITL.sh Dashboard](https://hitl.sh/dashboard)
+1. Go to [HITL.sh Dashboard](https://my.hitl.sh/dashboard)
 2. Rotate your API key
 3. Update OpenAI Agent Builder with the new key
 

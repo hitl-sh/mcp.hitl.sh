@@ -143,7 +143,7 @@ export default function SetupApiKey() {
             <li>Click "Log in with Auth0" above</li>
             <li>Use the <strong>same email/password</strong> you used when connecting ChatGPT</li>
             <li>After logging in, you'll be able to enter your HITL API key</li>
-            <li>Get your HITL API key from <a href="https://hitl.sh/dashboard" target="_blank" rel="noopener noreferrer">hitl.sh/dashboard</a></li>
+            <li>Get your HITL API key from <a href="https://my.hitl.sh/dashboard" target="_blank" rel="noopener noreferrer">my.hitl.sh/dashboard</a></li>
           </ol>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function SetupApiKey() {
 
       <p style={{ color: '#666', marginBottom: '30px' }}>
         Enter your HITL.sh API key to use the MCP server with your personal account. You can find your API key in your{' '}
-        <a href="https://hitl.sh/dashboard" target="_blank" rel="noopener noreferrer">
+        <a href="https://my.hitl.sh/dashboard" target="_blank" rel="noopener noreferrer">
           HITL.sh dashboard
         </a>.
       </p>
