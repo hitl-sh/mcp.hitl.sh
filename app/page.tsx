@@ -224,7 +224,7 @@ export default function HomePage() {
             <span>Setup API Key</span>
           </Link>
           <a
-            href="https://github.com/your-repo/mcp-hitl"
+            href="https://github.com/hitl-sh/mcp.hitl.sh"
             target="_blank"
             rel="noopener noreferrer"
             style={{
