@@ -144,6 +144,12 @@ export default function SetupApiKey() {
             <li>Use the <strong>same email/password</strong> you used when connecting ChatGPT</li>
             <li>After logging in, you'll be able to enter your HITL API key</li>
             <li>Get your HITL API key from <a href="https://my.hitl.sh/dashboard" target="_blank" rel="noopener noreferrer">my.hitl.sh/dashboard</a></li>
+            <li>
+              Download the HITL mobile app — the core function of Human in the Loop is our app:{' '}
+              <a href="https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072" target="_blank" rel="noopener noreferrer">App Store</a>
+              {' | '}
+              <a href="https://play.google.com/store/apps/details?id=hitl.sh.app" target="_blank" rel="noopener noreferrer">Google Play</a>
+            </li>
           </ol>
         </div>
       </div>
@@ -256,6 +262,12 @@ export default function SetupApiKey() {
           <li>Navigate to Settings or API Keys section</li>
           <li>Copy your API key (starts with <code style={{ background: 'white', padding: '2px 6px', borderRadius: '3px' }}>hitl_live_</code>)</li>
           <li>Paste it in the form above</li>
+          <li>
+            Download the HITL mobile app — the core function of this product is the app:{' '}
+            <a href="https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072" target="_blank" rel="noopener noreferrer">App Store</a>
+            {' | '}
+            <a href="https://play.google.com/store/apps/details?id=hitl.sh.app" target="_blank" rel="noopener noreferrer">Google Play</a>
+          </li>
         </ol>
         <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
           After saving, disconnect and reconnect your MCP connector in ChatGPT for the changes to take effect.
