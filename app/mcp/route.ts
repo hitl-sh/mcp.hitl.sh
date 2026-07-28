@@ -72,7 +72,7 @@ type ToolExtra = {
 
 const createRequestFieldsSchema = z.object({
   processing_type: z.enum(["time-sensitive", "deferred"]),
-  type: z.enum(["markdown", "image"]),
+  type: z.enum(["markdown", "image", "file", "video"]),
   priority: z.enum(["low", "medium", "high", "critical"]),
   request_text: z.string().min(1).max(2_000),
   timeout_seconds: z.number().int().positive().optional(),
@@ -87,6 +87,10 @@ const createRequestFieldsSchema = z.object({
   default_response: z.unknown(),
   platform: z.string().default("api").optional(),
   image_url: z.string().url().optional(),
+  file_url: z.string().url().optional(),
+  file_type: z.string().optional(),
+  file_name: z.string().optional(),
+  video_url: z.string().url().optional(),
   context: z.record(z.unknown()).optional(),
   callback_url: z.string().url().optional(),
   tags: z.array(z.string()).optional(),
@@ -113,6 +117,20 @@ const createRequestInputSchema = createRequestFieldsSchema
         path: ["image_url"],
         code: z.ZodIssueCode.custom,
         message: "image_url is required when type is image",
+      });
+    }
+    if (value.type === "file" && !value.file_url) {
+      ctx.addIssue({
+        path: ["file_url"],
+        code: z.ZodIssueCode.custom,
+        message: "file_url is required when type is file",
+      });
+    }
+    if (value.type === "video" && !value.video_url) {
+      ctx.addIssue({
+        path: ["video_url"],
+        code: z.ZodIssueCode.custom,
+        message: "video_url is required when type is video",
       });
     }
   });
@@ -306,7 +324,7 @@ const listLoopsShape: ZRS = {};
 const createRequestShape = {
   loop_id: z.string().min(1, "Loop ID is required"),
   processing_type: z.enum(["time-sensitive", "deferred"]),
-  type: z.enum(["markdown", "image"]),
+  type: z.enum(["markdown", "image", "file", "video"]),
   priority: z.enum(["low", "medium", "high", "critical"]),
   request_text: z.string().min(1).max(2_000),
   timeout_seconds: z.number().int().positive().optional(),
@@ -321,6 +339,10 @@ const createRequestShape = {
   default_response: z.unknown(),
   platform: z.string().optional(),
   image_url: z.string().url().optional(),
+  file_url: z.string().url().optional(),
+  file_type: z.string().optional(),
+  file_name: z.string().optional(),
+  video_url: z.string().url().optional(),
   context: z.record(z.unknown()).optional(),
   callback_url: z.string().url().optional(),
   tags: z.array(z.string()).optional(),

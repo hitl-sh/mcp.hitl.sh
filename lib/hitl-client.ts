@@ -43,7 +43,7 @@ export interface HitlLoopListResponse {
 }
 
 export type HitlProcessingType = "time-sensitive" | "deferred";
-export type HitlRequestType = "markdown" | "image";
+export type HitlRequestType = "markdown" | "image" | "file" | "video";
 export type HitlRequestPriority = "low" | "medium" | "high" | "critical";
 export type HitlResponseType =
   | "single_select"
@@ -63,6 +63,10 @@ export interface CreateRequestPayload {
   default_response: unknown;
   platform?: string;
   image_url?: string;
+  file_url?: string;
+  file_type?: string;
+  file_name?: string;
+  video_url?: string;
   context?: Record<string, unknown>;
   callback_url?: string;
   tags?: string[];
