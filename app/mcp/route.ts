@@ -72,7 +72,7 @@ type ToolExtra = {
 
 const createRequestFieldsSchema = z.object({
   processing_type: z.enum(["time-sensitive", "deferred"]),
-  type: z.enum(["markdown", "image", "file", "video"]),
+  type: z.enum(["markdown", "image", "file", "video", "audio"]),
   priority: z.enum(["low", "medium", "high", "critical"]),
   request_text: z.string().min(1).max(2_000),
   timeout_seconds: z.number().int().positive().optional(),
@@ -82,6 +82,8 @@ const createRequestFieldsSchema = z.object({
     "rating",
     "text",
     "number",
+    "boolean",
+    "editable_text",
   ]),
   response_config: z.record(z.unknown()),
   default_response: z.unknown(),
@@ -91,6 +93,14 @@ const createRequestFieldsSchema = z.object({
   file_type: z.string().optional(),
   file_name: z.string().optional(),
   video_url: z.string().url().optional(),
+  audio_url: z.string().url().optional(),
+  image_urls: z.array(z.string().url()).optional(),
+  file_urls: z.array(z.string().url()).optional(),
+  file_types: z.array(z.string()).optional(),
+  file_names: z.array(z.string()).optional(),
+  video_urls: z.array(z.string().url()).optional(),
+  audio_urls: z.array(z.string().url()).optional(),
+  assignee_role: z.enum(["any", "manager", "admin"]).optional(),
   context: z.record(z.unknown()).optional(),
   callback_url: z.string().url().optional(),
   tags: z.array(z.string()).optional(),
@@ -131,6 +141,13 @@ const createRequestInputSchema = createRequestFieldsSchema
         path: ["video_url"],
         code: z.ZodIssueCode.custom,
         message: "video_url is required when type is video",
+      });
+    }
+    if (value.type === "audio" && !value.audio_url) {
+      ctx.addIssue({
+        path: ["audio_url"],
+        code: z.ZodIssueCode.custom,
+        message: "audio_url is required when type is audio",
       });
     }
   });
@@ -324,7 +341,7 @@ const listLoopsShape: ZRS = {};
 const createRequestShape = {
   loop_id: z.string().min(1, "Loop ID is required"),
   processing_type: z.enum(["time-sensitive", "deferred"]),
-  type: z.enum(["markdown", "image", "file", "video"]),
+  type: z.enum(["markdown", "image", "file", "video", "audio"]),
   priority: z.enum(["low", "medium", "high", "critical"]),
   request_text: z.string().min(1).max(2_000),
   timeout_seconds: z.number().int().positive().optional(),
@@ -334,6 +351,8 @@ const createRequestShape = {
     "rating",
     "text",
     "number",
+    "boolean",
+    "editable_text",
   ]),
   response_config: z.record(z.unknown()),
   default_response: z.unknown(),
@@ -343,6 +362,14 @@ const createRequestShape = {
   file_type: z.string().optional(),
   file_name: z.string().optional(),
   video_url: z.string().url().optional(),
+  audio_url: z.string().url().optional(),
+  image_urls: z.array(z.string().url()).optional(),
+  file_urls: z.array(z.string().url()).optional(),
+  file_types: z.array(z.string()).optional(),
+  file_names: z.array(z.string()).optional(),
+  video_urls: z.array(z.string().url()).optional(),
+  audio_urls: z.array(z.string().url()).optional(),
+  assignee_role: z.enum(["any", "manager", "admin"]).optional(),
   context: z.record(z.unknown()).optional(),
   callback_url: z.string().url().optional(),
   tags: z.array(z.string()).optional(),
