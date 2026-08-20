@@ -53,6 +53,14 @@ const TOOL_METADATA = {
     description:
       "Attach structured feedback to a completed request to inform reviewers.",
   },
+  list_images: {
+    description:
+      "List all images in the user's mobile image library with their numbers. Use these numbers with get_image to fetch a specific image.",
+  },
+  get_image: {
+    description:
+      "Get a specific image from the user's mobile library by its number. Returns the image so you can see it directly.",
+  },
 } satisfies Record<string, { description: string }>;
 
 const USER_AGENT = "hitl-mcp-server/0.1.0";
@@ -554,6 +562,121 @@ const baseHandler = createMcpHandler(
             message: envelope.msg,
             data: envelope.data,
           });
+        } catch (error) {
+          throw normalizeError(error);
+        }
+      }) as any,
+    );
+
+    // --- Image capture tools ---
+
+    const listImagesShape = {
+      limit: z.number().int().min(1).max(50).optional().describe("Max images to return (default 20)"),
+    };
+
+    server.tool(
+      "list_images",
+      listImagesShape,
+      { description: TOOL_METADATA.list_images.description },
+      (async (input: any, extra: any) => {
+        try {
+          const { client } = await createClient(extra);
+          const limit = input.limit ?? 20;
+          const response = await client.listCaptures(limit);
+          const envelope = normalizeEnvelope(response);
+          const captures = envelope.data?.captures ?? [];
+          return formatContent({
+            message: envelope.msg,
+            images: captures.map((c: any) => ({
+              number: c.number,
+              label: c.label || null,
+              source: c.source,
+              mime_type: c.mime_type,
+              image_url: c.image_url,
+              captured_at: c.created_at,
+            })),
+            count: captures.length,
+            total: envelope.data?.pagination?.total ?? captures.length,
+          });
+        } catch (error) {
+          throw normalizeError(error);
+        }
+      }) as any,
+    );
+
+    const getImageShape = {
+      number: z.number().int().min(1).describe("The image number to retrieve (e.g. 1, 2, 3)"),
+    };
+
+    server.tool(
+      "get_image",
+      getImageShape,
+      { description: TOOL_METADATA.get_image.description },
+      (async (input: any, extra: any) => {
+        try {
+          const { client } = await createClient(extra);
+          const response = await client.getCaptureByNumber(input.number);
+          const envelope = normalizeEnvelope(response);
+          const capture = envelope.data;
+
+          if (!capture || !capture.image_url) {
+            return formatContent({
+              message: `Image ${input.number} not found. Use list_images to see available images.`,
+            });
+          }
+
+          // Fetch the image and return as base64
+          try {
+            const imageResponse = await fetch(capture.image_url);
+            if (!imageResponse.ok) {
+              return formatContent({
+                message: `Image ${input.number} found but could not be downloaded.`,
+                image_url: capture.image_url,
+                metadata: { number: capture.number, label: capture.label, source: capture.source, captured_at: capture.created_at },
+              });
+            }
+
+            const arrayBuffer = await imageResponse.arrayBuffer();
+            const sizeBytes = arrayBuffer.byteLength;
+
+            // Skip base64 for images > 4MB
+            if (sizeBytes > 4 * 1024 * 1024) {
+              return formatContent({
+                message: `Image ${input.number} is too large to embed (${(sizeBytes / 1024 / 1024).toFixed(1)}MB). Use the URL directly.`,
+                image_url: capture.image_url,
+                metadata: { number: capture.number, label: capture.label, source: capture.source, captured_at: capture.created_at },
+              });
+            }
+
+            const base64Data = Buffer.from(arrayBuffer).toString("base64");
+            const mimeType = capture.mime_type || "image/png";
+
+            return {
+              content: [
+                {
+                  type: "image" as const,
+                  data: base64Data,
+                  mimeType,
+                },
+                {
+                  type: "text" as const,
+                  text: JSON.stringify({
+                    image_number: capture.number,
+                    label: capture.label || null,
+                    source: capture.source,
+                    captured_at: capture.created_at,
+                  }, null, 2),
+                },
+              ],
+            } as unknown as { [x: string]: unknown; content: unknown[] };
+          } catch {
+            // Fallback: return URL if fetch fails
+            return formatContent({
+              message: `Image ${input.number} found. Could not fetch binary — use URL directly.`,
+              image_url: capture.image_url,
+              metadata: { number: capture.number, label: capture.label, source: capture.source, captured_at: capture.created_at },
+            });
+          }
         } catch (error) {
           throw normalizeError(error);
         }

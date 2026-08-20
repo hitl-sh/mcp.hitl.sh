@@ -271,6 +271,26 @@ export class HitlClient {
     );
   }
 
+  // --- Captures (mobile image library) ---
+
+  async listCaptures(
+    limit = 20
+  ): Promise<HitlApiEnvelope<{ captures: McpCapture[]; pagination: { total: number; limit: number; offset: number; count: number } }>> {
+    return this.request(
+      `api/captures?limit=${limit}`,
+      { method: "GET" }
+    );
+  }
+
+  async getCaptureByNumber(
+    number: number
+  ): Promise<HitlApiEnvelope<McpCapture>> {
+    return this.request(
+      `api/captures/${number}`,
+      { method: "GET" }
+    );
+  }
+
   private async request<T>(
     path: string,
     init: RequestInit & { body?: BodyInit | null }
@@ -311,6 +331,16 @@ export class HitlClient {
 
     return body as T;
   }
+}
+
+export interface McpCapture {
+  id: string;
+  number: number;
+  image_url: string;
+  mime_type: string;
+  label?: string;
+  source: string;
+  created_at: string;
 }
 
 export function createHitlClient(
