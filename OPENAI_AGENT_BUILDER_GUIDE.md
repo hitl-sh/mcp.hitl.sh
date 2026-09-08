@@ -45,9 +45,9 @@ Example: `hitl_live_082befdbc0b3953a81fd47d4e4cf51e9819849577b91d72b`
 ### Step 3: Test the Connection
 
 Ask your OpenAI agent:
-> "List my HITL loops"
+> "List my HITL workflows"
 
-The agent should call the `list_loops` tool and show you your loops! ✅
+The agent should call the `list_loops` tool and show you your workflows! ✅
 
 ---
 
@@ -55,72 +55,72 @@ The agent should call the `list_loops` tool and show you your loops! ✅
 
 Your OpenAI agent now has access to these HITL tools:
 
-### Loop Management
+### Workflow Management
 
-- **`list_loops`** - View all your HITL loops
-- **`get_loop`** - Get details about a specific loop
+- **`list_loops`** - View all your HITL workflows
+- **`get_loop`** - Get details about a specific workflow
 
-### Request Management
+### Response Management
 
-- **`create_request`** - Create a new review request
+- **`create_request`** - Create a new review response
   ```
-  Example: "Create a review request in loop loop_abc123 asking
+  Example: "Create a review response in workflow loop_abc123 asking
   reviewers to categorize this support ticket as Bug, Feature, or Question"
   ```
 
-- **`list_requests`** - List all requests with optional filters
+- **`list_requests`** - List all responses with optional filters
   ```
-  Example: "Show me all pending requests"
-  Example: "List high priority requests in loop loop_abc123"
-  ```
-
-- **`get_request`** - Get details about a specific request
-  ```
-  Example: "What's the status of request req_xyz789?"
+  Example: "Show me all pending responses"
+  Example: "List high priority responses in workflow loop_abc123"
   ```
 
-- **`update_request`** - Update request text, priority, or configuration
+- **`get_request`** - Get details about a specific response
   ```
-  Example: "Update request req_xyz789 to high priority"
+  Example: "What's the status of response req_xyz789?"
   ```
 
-- **`cancel_request`** - Cancel a pending request
+- **`update_request`** - Update response text, priority, or configuration
   ```
-  Example: "Cancel request req_xyz789"
+  Example: "Update response req_xyz789 to high priority"
+  ```
+
+- **`cancel_request`** - Cancel a pending response
+  ```
+  Example: "Cancel response req_xyz789"
   ```
 
 ### Feedback
 
-- **`add_request_feedback`** - Add feedback to a completed request
+- **`add_request_feedback`** - Add feedback to a completed response
   ```
-  Example: "Add feedback to request req_xyz789 with rating: 5"
+  Example: "Add feedback to response req_xyz789 with rating: 5"
   ```
 
 ---
 
 ## 💡 Example Workflows
 
-### 1. Create and Track a Review Request
+### 1. Create and Track a Review Response
 
-**You**: "Create a HITL request asking reviewers to classify this email as spam or not spam. The email says: 'Congratulations! You won $1 million!'"
+**You**: "Create a HITL response asking reviewers to classify this email as spam or not spam. The email says: 'Congratulations! You won $1 million!'"
 
 **Agent**:
-1. Uses `list_loops` to find your first loop
-2. Uses `create_request` to create the request
-3. Returns the request ID
+1. Uses `list_loops` to find your first workflow
+2. Uses `create_request` to create the response
+3. Returns the response ID
 
-**You**: "What's the status of that request?"
+**You**: "What's the status of that response?"
 
 **Agent**:
 1. Uses `get_request` with the ID
 2. Shows status (pending/claimed/completed)
-3. If completed, shows the reviewer's response
+3. If completed, shows the reviewer's answer
 
 ---
 
-### 2. Bulk Request Management
+### 2. Bulk Response Management
 
-**You**: "Show me all pending high-priority requests"
+**You**: "Show me all pending high-priority responses"
 
 **Agent**:
 1. Uses `list_requests` with filters: `status=pending, priority=high`
@@ -129,18 +129,18 @@ Your OpenAI agent now has access to these HITL tools:
 **You**: "Cancel all of them"
 
 **Agent**:
-1. For each request, uses `cancel_request`
+1. For each response, uses `cancel_request`
 2. Confirms cancellation
 
 ---
 
 ### 3. Feedback Collection
 
-**You**: "Get request req_abc123 and show me the feedback"
+**You**: "Get response req_abc123 and show me the feedback"
 
 **Agent**:
 1. Uses `get_request` to fetch details
-2. Shows the request text, status, and reviewer feedback
+2. Shows the response text, status, and reviewer feedback
 
 ---
 
@@ -201,11 +201,11 @@ To revoke access:
 
 ### "No loops found" Error
 
-**Problem**: You haven't created any loops in HITL.sh yet
+**Problem**: You haven't created any workflows in HITL.sh yet
 
 **Solution**:
 1. Go to [HITL.sh](https://hitl.sh)
-2. Create at least one loop
+2. Create at least one workflow
 3. Try again in OpenAI Agent Builder
 
 ---
@@ -243,10 +243,10 @@ To revoke access:
 ## 🎉 You're All Set!
 
 Your OpenAI agent can now:
-- ✅ Create human review requests
-- ✅ Track request status
+- ✅ Create human review responses
+- ✅ Track response status
 - ✅ Collect reviewer feedback
-- ✅ Manage loops and requests
+- ✅ Manage workflows and responses
 
 Use HITL to add human judgment to your AI workflows! 🚀
 

@@ -137,53 +137,53 @@ After reopening Claude Desktop:
 
 Try these prompts in Claude Desktop to test your MCP tools:
 
-#### Test 1: List Loops
+#### Test 1: List Workflows
 ```
-Can you list all my HITL loops?
+Can you list all my HITL workflows?
 ```
 
-Expected: Claude will use the `list_loops` tool and show your loops.
+Expected: Claude will use the `list_loops` tool and show your workflows.
 
-#### Test 2: List Requests
+#### Test 2: List Responses
 ```
-Show me all my pending requests
+Show me all my pending responses
 ```
 
 Expected: Claude will use `list_requests` with status filter.
 
-#### Test 3: Create a Request
+#### Test 3: Create a Response
 ```
-Create a test request in my first loop asking reviewers to rate content quality from 1-5
+Create a test response in my first workflow asking reviewers to rate content quality from 1-5
 ```
 
 Expected: Claude will:
-1. First call `list_loops` to get your loop ID
+1. First call `list_loops` to get your workflow ID
 2. Then call `create_request` with appropriate parameters
 
-#### Test 4: Get Request Details
+#### Test 4: Get Response Details
 ```
-Get the details of request ID [paste-request-id-here]
+Get the details of response ID [paste-request-id-here]
 ```
 
 Expected: Claude will use `get_request` to fetch details.
 
-#### Test 5: Update Request
+#### Test 5: Update Response
 ```
-Update request [request-id] to have high priority
+Update response [request-id] to have high priority
 ```
 
 Expected: Claude will use `update_request` to change priority.
 
-#### Test 6: Cancel Request
+#### Test 6: Cancel Response
 ```
-Cancel request [request-id]
+Cancel response [request-id]
 ```
 
 Expected: Claude will use `cancel_request` (DELETE method).
 
 #### Test 7: Add Feedback
 ```
-Add feedback to request [request-id] with a rating of 5 stars
+Add feedback to response [request-id] with a rating of 5 stars
 ```
 
 Expected: Claude will use `add_request_feedback`.
@@ -314,8 +314,8 @@ If you have different API keys for different environments:
    - Test feedback (`add_request_feedback`)
 
 4. **Test Complex Workflows**
-   - Ask Claude to create, update, and cancel a request in one conversation
-   - Ask Claude to analyze your request patterns
+   - Ask Claude to create, update, and cancel a response in one conversation
+   - Ask Claude to analyze your response patterns
    - Have Claude help you triage support tickets using the tools
 
 5. **Monitor Server Logs**
@@ -327,15 +327,15 @@ If you have different API keys for different environments:
 Here's a complete example conversation to test all tools:
 
 ```
-You: Hi! I'd like to test my HITL MCP integration. Can you start by showing me all my loops?
+You: Hi! I'd like to test my HITL MCP integration. Can you start by showing me all my workflows?
 
 Claude: [Uses list_loops tool and shows results]
 
-You: Great! Now create a test request in the first loop asking reviewers to categorize a support ticket as either "Bug", "Feature Request", or "Question". Set the priority to high.
+You: Great! Now create a test response in the first workflow asking reviewers to categorize a support ticket as either "Bug", "Feature Request", or "Question". Set the priority to high.
 
 Claude: [Uses create_request with single_select response type]
 
-You: Perfect! Can you show me the details of that request?
+You: Perfect! Can you show me the details of that response?
 
 Claude: [Uses get_request to fetch details]
 
@@ -343,11 +343,11 @@ You: Now update it to critical priority instead of high.
 
 Claude: [Uses update_request to change priority]
 
-You: Thanks! Let's cancel this test request now.
+You: Thanks! Let's cancel this test response now.
 
-Claude: [Uses cancel_request to delete the request]
+Claude: [Uses cancel_request to delete the response]
 
-You: Excellent! Show me all my recent requests now.
+You: Excellent! Show me all my recent responses now.
 
 Claude: [Uses list_requests to show updated list]
 ```
