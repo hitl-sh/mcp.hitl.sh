@@ -45,13 +45,14 @@ Choose the endpoint that matches your platform:
 
 | Tool | Description |
 |------|-------------|
-| `list_loops` | Retrieve all loops owned by the authenticated HITL.sh account |
-| `create_request` | Create a new review request within a specific loop |
-| `list_requests` | List requests with optional filters (status, priority, loop_id, etc.) |
-| `get_request` | Fetch detailed information about a single request |
-| `update_request` | Update mutable fields of a request (text, priority, config) |
-| `cancel_request` | Cancel a pending or claimed request |
-| `add_request_feedback` | Attach structured feedback to a completed request |
+| `list_loops` | Retrieve all workflows owned by the authenticated HITL.sh account |
+| `create_request` | Create a new response within a specific workflow |
+| `list_requests` | List responses with optional filters (status, priority, loop_id, etc.) |
+| `get_request` | Fetch detailed information about a single response |
+| `update_request` | Update mutable fields of a response (text, priority, config) |
+| `delete_request` | Permanently delete a response |
+| `cancel_request` | Cancel a pending or claimed response |
+| `add_request_feedback` | Attach structured feedback to a completed response |
 
 ## 📋 Prerequisites
 
