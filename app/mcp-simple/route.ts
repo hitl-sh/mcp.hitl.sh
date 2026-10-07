@@ -504,7 +504,8 @@ const baseHandler = createMcpHandler(
     },
   },
   {
-    basePath: "",
+    // mcp-handler only answers on this exact path, so it must match the route folder.
+    streamableHttpEndpoint: "/mcp-simple",
     verboseLogs: process.env.NODE_ENV !== "production",
     maxDuration: 90,
     disableSse: true,
