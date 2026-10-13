@@ -11,6 +11,7 @@ import {
   type ListRequestsParams,
   type UpdateRequestPayload,
 } from "@/lib/hitl-client";
+import { rememberClientInfo, resolveRequestSource } from "@/lib/request-source";
 
 const TOOL_METADATA = {
   list_loops: {
@@ -348,9 +349,8 @@ const baseHandler = createMcpHandler(
           const { client } = await createClient(req);
           const parsed = createRequestInputSchema.parse(input);
           const { loop_id, ...payload } = parsed as any;
-          if (!payload.platform) {
-            payload.platform = "api";
-          }
+          // Where the request came from (MCP client), shown to reviewers in the portal
+          Object.assign(payload, resolveRequestSource(req.headers, payload.platform));
           const response = await client.createRequest(
             loop_id,
             payload as CreateRequestPayload,
@@ -513,7 +513,9 @@ const baseHandler = createMcpHandler(
 );
 
 // Wrapper to inject Request into AsyncLocalStorage
-const handler = (req: Request) =>
-  requestStorage.run(req, () => baseHandler(req));
+const handler = async (req: Request) => {
+  await rememberClientInfo(req);
+  return requestStorage.run(req, () => baseHandler(req));
+};
 
 export { handler as GET, handler as POST, handler as DELETE };

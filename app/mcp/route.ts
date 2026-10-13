@@ -23,6 +23,7 @@ import {
   type UpdateRequestPayload,
 } from "@/lib/hitl-client";
 import { verifyAuth0Token } from "@/lib/auth0-verify";
+import { rememberClientInfo, resolveRequestSource } from "@/lib/request-source";
 
 const TOOL_METADATA = {
   list_loops: {
@@ -442,9 +443,8 @@ const baseHandler = createMcpHandler(
           // Re-validate with full schema to enforce superRefine rules
           const parsed = createRequestInputSchema.parse(input);
           const { loop_id, ...payload } = parsed as any;
-          if (!payload.platform) {
-            payload.platform = "api";
-          }
+          // Where the request came from (MCP client), shown to reviewers in the portal
+          Object.assign(payload, resolveRequestSource(extra?.requestInfo?.headers, payload.platform));
           const response = await client.createRequest(
             loop_id,
             payload as CreateRequestPayload,
@@ -705,8 +705,10 @@ const baseHandler = createMcpHandler(
   },
 );
 
-const handler = (req: Request) =>
-  authStorage.run((req as { auth?: AuthInfo }).auth, () => baseHandler(req));
+const handler = async (req: Request) => {
+  await rememberClientInfo(req);
+  return authStorage.run((req as { auth?: AuthInfo }).auth, () => baseHandler(req));
+};
 
 async function getAuthInfoForToken(
   bearerToken?: string,

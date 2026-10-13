@@ -64,6 +64,8 @@ export interface CreateRequestPayload {
   response_config: Record<string, unknown>;
   default_response: unknown;
   platform?: string;
+  /** Tool that sent the request, e.g. "claude-code" or "cursor" (shown in the portal) */
+  source?: string;
   image_url?: string;
   file_url?: string;
   file_type?: string;
