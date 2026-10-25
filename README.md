@@ -90,6 +90,11 @@ AUTH0_MANAGEMENT_CLIENT_SECRET=your_management_client_secret
 ```bash
 # HITL API Base URL override
 HITL_API_BASE=https://api.hitl.sh/v1
+
+# Extra hosts allowed to receive the API key (comma-separated). The client only sends
+# keys to hitl.sh and its subdomains, so set this to use a local API, e.g.
+# HITL_API_BASE=http://localhost:8080/v1 with HITL_ALLOW_HOSTS=localhost
+HITL_ALLOW_HOSTS=
 ```
 
 ## 🚀 Quick Start

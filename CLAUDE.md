@@ -72,7 +72,7 @@ The `/mcp` route is the main MCP server endpoint. It uses:
 `HitlClient` from the published `@hitl-sh/core` package:
 
 - `new HitlClient(apiKey, { baseUrl, userAgent })`; the routes pass `HITL_API_BASE` as `baseUrl` when set (default `https://api.hitl.sh/v1`)
-- Refuses to send the key to any host that is not hitl.sh or a subdomain (`allowHosts` overrides it)
+- Refuses to send the key to any host that is not hitl.sh or a subdomain; the routes pass `HITL_ALLOW_HOSTS` as `allowHosts`
 - All methods return `HitlApiEnvelope<T>` with standard `{error, msg, data}` shape
 - Throws `HitlApiError` (with status code and body) on HTTP errors
 
@@ -101,6 +101,7 @@ Example: `import { verifyAuth0Token } from "@/lib/auth0-verify"`
 | Name | Required | Description |
 |------|----------|-------------|
 | `HITL_API_BASE` | No | Override HITL API root (defaults to `https://api.hitl.sh/v1`) |
+| `HITL_ALLOW_HOSTS` | No | Comma-separated extra hosts allowed to receive the key (e.g. `localhost` for a local API); passed to `HitlClient` as `allowHosts` |
 
 ## Deployment Notes
 

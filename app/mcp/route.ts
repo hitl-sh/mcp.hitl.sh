@@ -57,6 +57,8 @@ function createClient(extra: ToolExtra): HitlClient {
   return new HitlClient(hitlApiKey, {
     userAgent: USER_AGENT,
     ...(process.env.HITL_API_BASE ? { baseUrl: process.env.HITL_API_BASE } : {}),
+    // Extra hosts allowed to receive the key, e.g. "localhost" for a local API (comma-separated)
+    allowHosts: (process.env.HITL_ALLOW_HOSTS ?? "").split(",").map((h) => h.trim()).filter(Boolean),
   });
 }
 
