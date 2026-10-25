@@ -8,17 +8,18 @@
     "start": "next start"
   },
   "dependencies": {
+    "@hitl-sh/core": "0.1.1",
     "dotenv": "^17.2.3",
     "jose": "^6.1.0",
-    "mcp-handler": "^1.0.1",
+    "mcp-handler": "^1.1.0",
     "next": "15.2.6",
     "react": "^19.1.2",
     "react-dom": "^19.1.2",
     "redis": "^4.7.0",
-    "zod": "^3.24.2"
+    "zod": "^3.25.51"
   },
   "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.20.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "typescript": "^5"

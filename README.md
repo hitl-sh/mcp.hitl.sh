@@ -50,9 +50,12 @@ Choose the endpoint that matches your platform:
 | `list_requests` | List responses with optional filters (status, priority, loop_id, etc.) |
 | `get_request` | Fetch detailed information about a single response |
 | `update_request` | Update mutable fields of a response (text, priority, config) |
-| `delete_request` | Permanently delete a response |
 | `cancel_request` | Cancel a pending or claimed response |
 | `add_request_feedback` | Attach structured feedback to a completed response |
+| `list_images` | List the images in the user's mobile image library |
+| `get_image` | Fetch one image from the mobile library by its number |
+
+Both endpoints (`/mcp` and `/mcp-simple`) register these nine tools from [`@hitl-sh/core`](https://www.npmjs.com/package/@hitl-sh/core), the same package behind the stdio server `@hitl-sh/mcp`, so the remote and local servers expose identical tools.
 
 ## 📋 Prerequisites
 
@@ -183,7 +186,7 @@ Visit `https://your-app.vercel.app/setup-api-key` to configure your personal HIT
 
 ## 💻 Using with Claude Desktop
 
-For local Claude Desktop integration, use the standalone stdio server:
+For local Claude Desktop integration, use the published stdio server `@hitl-sh/mcp`:
 
 ### 1. Configure Claude Desktop
 
@@ -193,8 +196,8 @@ Add to `~/Library/Application Support/Claude/config.json`:
 {
   "mcpServers": {
     "hitl": {
-      "command": "node",
-      "args": ["/path/to/mcp.hitl.sh/scripts/claude-desktop-server.mjs"],
+      "command": "npx",
+      "args": ["-y", "@hitl-sh/mcp"],
       "env": {
         "HITL_API_KEY": "your_hitl_api_key_here"
       }
@@ -202,6 +205,8 @@ Add to `~/Library/Application Support/Claude/config.json`:
   }
 }
 ```
+
+From a clone of this repo, `node scripts/claude-desktop-server.mjs` runs the same server.
 
 ### 2. Restart Claude Desktop
 
@@ -228,17 +233,17 @@ node scripts/test-all-tools.mjs http://localhost:3000/mcp your_api_key
 ```
 mcp.hitl.sh/
 ├── app/
-│   ├── mcp/route.ts                    # Main MCP endpoint
+│   ├── mcp/route.ts                    # Main MCP endpoint (OAuth)
+│   ├── mcp-simple/route.ts             # MCP endpoint with a raw API key
 │   ├── setup-api-key/page.tsx          # User API key setup page
 │   ├── api/update-hitl-key/route.ts    # API key update endpoint
 │   └── .well-known/
 │       ├── oauth-protected-resource/   # OAuth discovery
 │       └── oauth-authorization-server/ # Auth server metadata
 ├── lib/
-│   ├── hitl-client.ts                  # HITL.sh API client
 │   └── auth0-verify.ts                 # Auth0 token verification
 ├── scripts/
-│   ├── claude-desktop-server.mjs       # Stdio server for Claude Desktop
+│   ├── claude-desktop-server.mjs       # Stdio server (wraps @hitl-sh/core)
 │   ├── test-oauth.mjs                  # OAuth flow test
 │   └── test-all-tools.mjs              # All tools test
 └── docs/ (via .md files)
