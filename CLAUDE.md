@@ -40,50 +40,45 @@ HITL_API_KEY=sk_live_YOUR_KEY node scripts/test-hitl-mcp.mjs http://localhost:30
 
 The `/mcp` route is the main MCP server endpoint. It uses:
 
-- **Authentication Flow**: Bearer token auth via `withMcpAuth` wrapper
-  - Clients provide HITL API key as `Authorization: Bearer sk_live_...`
-  - Keys are validated against `https://api.hitl.sh/v1/test` endpoint
-  - Auth results cached for 5 minutes (`AUTH_CACHE_TTL_MS`)
+- **Authentication Flow**: Auth0 OAuth via the `withMcpAuth` wrapper and `verifyAuth0Token`
+  - The per-user HITL key comes from the `https://mcp.hitl.sh/hitl_api_key` (or `hitl_api_key`) token claim
+  - Falls back to the shared `HITL_API_KEY` env var when the user has no key
   - AsyncLocalStorage used to propagate auth context to tool handlers
 
-- **Tool Registration**: Eight tools registered via `createMcpHandler`:
+- **Tool Registration**: Nine tools registered with `registerHitlTools` from `@hitl-sh/core/mcp-tools`
+  (the same definitions the stdio server `@hitl-sh/mcp` uses; change tools in the cli.hitl.sh repo, not here):
   - `list_loops` - List all loops owned by the authenticated account
   - `create_request` - Create and broadcast a new request inside a loop
   - `list_requests` - List requests with optional filters
   - `get_request` - Retrieve full details for a single request
   - `update_request` - Patch mutable request fields
-  - `delete_request` - Permanently delete a request
   - `cancel_request` - Cancel an in-flight request
   - `add_request_feedback` - Attach structured reviewer feedback
+  - `list_images` - List the user's mobile image library
+  - `get_image` - Fetch one image from the library by number
+- **Request source**: `create_request` sends `source` (the MCP client, e.g. `claude-code`) via
+  `resolveRequestSource` from `@hitl-sh/core/request-source`; the route calls `rememberClientInfo`
+  on every request so the `initialize` handshake's client name is remembered.
+- `/mcp-simple` ([app/mcp-simple/route.ts](app/mcp-simple/route.ts)) registers the same tools but takes the
+  raw HITL API key as the Bearer token instead of Auth0 OAuth.
 
 - **Configuration**:
   - `maxDuration: 90` (seconds, for Vercel Functions)
   - `disableSse: true` (uses Streamable HTTP only, no SSE)
   - OAuth protected resource metadata at `/.well-known/oauth-protected-resource`
 
-### HITL Client ([lib/hitl-client.ts](lib/hitl-client.ts))
+### HITL Client (`@hitl-sh/core/client`)
 
-Lightweight typed HTTP client for HITL.sh API:
+`HitlClient` from the published `@hitl-sh/core` package:
 
-- Base URL defaults to `https://api.hitl.sh/v1` (override via `HITL_API_BASE` env var)
+- `new HitlClient(apiKey, { baseUrl, userAgent })`; the routes pass `HITL_API_BASE` as `baseUrl` when set (default `https://api.hitl.sh/v1`)
+- Refuses to send the key to any host that is not hitl.sh or a subdomain; the routes pass `HITL_ALLOW_HOSTS` as `allowHosts`
 - All methods return `HitlApiEnvelope<T>` with standard `{error, msg, data}` shape
 - Throws `HitlApiError` (with status code and body) on HTTP errors
-- Methods correspond 1:1 with tool implementations in route.ts
-
-**Key Methods:**
-- `validateApiKey()` - Tests API key validity
-- `getLoops()` - Fetches loop list
-- `createRequest(loopId, payload)` - Creates request in loop
-- `listRequests(params)` - Lists requests with filters (status, priority, loop_id, limit, offset, sort)
-- `getRequest(requestId)` - Fetches single request
-- `updateRequest(requestId, payload)` - Patches request fields
-- `deleteRequest(requestId)` - Deletes request
-- `cancelRequest(requestId, payload?)` - Cancels request with optional reason
-- `addRequestFeedback(requestId, payload)` - Adds feedback to request
 
 ### Schema Validation
 
-All tool inputs validated with Zod schemas before API calls:
+All tool inputs are validated with Zod schemas inside `@hitl-sh/core/mcp-tools` before API calls:
 
 - `createRequestInputSchema` - Has `.superRefine()` to enforce:
   - `timeout_seconds` required when `processing_type === "time-sensitive"`
@@ -99,13 +94,14 @@ TypeScript configured with `@/*` alias mapping to repository root:
 "paths": { "@/*": ["./*"] }
 ```
 
-Example: `import { createHitlClient } from "@/lib/hitl-client"`
+Example: `import { verifyAuth0Token } from "@/lib/auth0-verify"`
 
 ## Environment Variables
 
 | Name | Required | Description |
 |------|----------|-------------|
 | `HITL_API_BASE` | No | Override HITL API root (defaults to `https://api.hitl.sh/v1`) |
+| `HITL_ALLOW_HOSTS` | No | Comma-separated extra hosts allowed to receive the key (e.g. `localhost` for a local API); passed to `HitlClient` as `allowHosts` |
 
 ## Deployment Notes
 
