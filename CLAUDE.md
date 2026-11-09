@@ -45,17 +45,20 @@ The `/mcp` route is the main MCP server endpoint. It uses:
   - Falls back to the shared `HITL_API_KEY` env var when the user has no key
   - AsyncLocalStorage used to propagate auth context to tool handlers
 
-- **Tool Registration**: Nine tools registered with `registerHitlTools` from `@hitl-sh/core/mcp-tools`
-  (the same definitions the stdio server `@hitl-sh/mcp` uses; change tools in the cli.hitl.sh repo, not here):
+- **Tool Registration**: Tools registered with `registerHitlTools` from `@hitl-sh/core/mcp-tools`
+  (the same definitions the stdio server `@hitl-sh/mcp` uses; change tools in the hitl-sh/cli repo, not here):
   - `list_loops` - List all loops owned by the authenticated account
   - `create_request` - Create and broadcast a new request inside a loop
   - `list_requests` - List requests with optional filters
   - `get_request` - Retrieve full details for a single request
-  - `update_request` - Patch mutable request fields
   - `cancel_request` - Cancel an in-flight request
   - `add_request_feedback` - Attach structured reviewer feedback
   - `list_images` - List the user's mobile image library
   - `get_image` - Fetch one image from the library by number
+  - plus one generated tool per route of `@hitl-sh/core/api-catalog`: workflows (`list_workflows`,
+    `get_workflow`, `get_workflow_input`, `run_workflow`, `list_workflow_executions`, `get_execution`,
+    `watch_execution`, writes), people, invitations, sessions, webhooks, orgs, teams, uploads.
+    Workflow routes are on dev.api.hitl.sh only for now; prod answers 404.
 - **Request source**: `create_request` sends `source` (the MCP client, e.g. `claude-code`) via
   `resolveRequestSource` from `@hitl-sh/core/request-source`; the route calls `rememberClientInfo`
   on every request so the `initialize` handshake's client name is remembered.

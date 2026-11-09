@@ -172,22 +172,6 @@ async function main() {
     logSuccess("Retrieved request details");
     console.log(JSON.stringify(getData.data, null, 2));
 
-    // Test 7: Update request
-    logTest("update_request - Update request priority");
-    const updateResponse = await client.callTool({
-      name: "update_request",
-      arguments: {
-        request_id: newRequestId,
-        updates: {
-          priority: "high",
-          request_text: "MCP Server Test Request - UPDATED with high priority",
-        },
-      },
-    });
-    const updateData = JSON.parse(updateResponse.content[0].text);
-    logSuccess("Request updated successfully!");
-    console.log(JSON.stringify(updateData.data, null, 2));
-
     // Test 8: Cancel request (via DELETE)
     logTest("cancel_request - Cancel the test request");
     const cancelResponse = await client.callTool({
@@ -241,7 +225,6 @@ async function main() {
   console.log("  ✅ create_request");
   console.log("  ✅ list_requests (with and without filters)");
   console.log("  ✅ get_request");
-  console.log("  ✅ update_request");
   console.log("  ✅ cancel_request (via DELETE)");
   console.log("  ℹ️  add_request_feedback (conditional)");
 }

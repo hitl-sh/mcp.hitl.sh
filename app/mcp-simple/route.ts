@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
+import { API_ROUTES } from "@hitl-sh/core/api-catalog";
 import { HitlClient } from "@hitl-sh/core/client";
 import { HITL_TOOL_DESCRIPTIONS, registerHitlTools } from "@hitl-sh/core/mcp-tools";
 import { rememberClientInfo, resolveRequestSource } from "@hitl-sh/core/request-source";
@@ -69,8 +70,13 @@ const baseHandler = createMcpHandler(
       version: "1.0.0",
     },
     capabilities: {
+      // Every tool registerHitlTools adds: one per catalog route (workflows, executions, ...), with the
+      // hand-written descriptions where core has them.
       tools: Object.fromEntries(
-        Object.entries(HITL_TOOL_DESCRIPTIONS).map(([name, description]) => [name, { description }]),
+        API_ROUTES.filter((route) => !route.cliOnly).map((route) => [
+          route.tool,
+          { description: HITL_TOOL_DESCRIPTIONS[route.tool] ?? route.summary },
+        ]),
       ),
     },
   },

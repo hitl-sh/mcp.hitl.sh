@@ -36,7 +36,7 @@ Choose the endpoint that matches your platform:
 
 - **OAuth 2.1 Authentication** - Secure OAuth flow with Auth0 integration
 - **Per-User API Keys** - Users can configure their own HITL.sh API keys
-- **7 HITL.sh Tools** - Complete integration with HITL.sh API
+- **Every HITL.sh API route as a tool** - Loops, requests, workflows, runs, people and more
 - **ChatGPT Compatible** - Works as a connector in ChatGPT
 - **Claude Desktop Support** - Standalone stdio server for local use
 - **Production Ready** - Deployed on Vercel with proper error handling
@@ -49,13 +49,26 @@ Choose the endpoint that matches your platform:
 | `create_request` | Create a new response within a specific workflow |
 | `list_requests` | List responses with optional filters (status, priority, loop_id, etc.) |
 | `get_request` | Fetch detailed information about a single response |
-| `update_request` | Update mutable fields of a response (text, priority, config) |
 | `cancel_request` | Cancel a pending or claimed response |
 | `add_request_feedback` | Attach structured feedback to a completed response |
 | `list_images` | List the images in the user's mobile image library |
 | `get_image` | Fetch one image from the mobile library by its number |
 
-Both endpoints (`/mcp` and `/mcp-simple`) register these nine tools from [`@hitl-sh/core`](https://www.npmjs.com/package/@hitl-sh/core), the same package behind the stdio server `@hitl-sh/mcp`, so the remote and local servers expose identical tools.
+Workflows (the newer editor's objects) have their own tools, so an agent can find a workflow, run it and follow the run:
+
+| Tool | Description |
+|------|-------------|
+| `list_workflows` | List your workflows, newest first |
+| `get_workflow` | Get a workflow's steps, connections and input fields |
+| `get_workflow_input` | List the input fields a workflow reads, with an example body |
+| `run_workflow` | Start a run of an active workflow |
+| `list_workflow_executions` | List a workflow's runs |
+| `get_execution` | Get one run; with `wait`, answer once it has finished |
+| `watch_execution` | Get a live-updates URL and token for a run |
+
+Writes (`create_workflow`, `update_workflow`, `activate_workflow`, ...), people and groups, invitations, sessions, webhooks, organizations, teams and uploads are covered too: one tool per route of the API catalog in `@hitl-sh/core`. The workflow, people and invitation routes are live on `dev.api.hitl.sh` and answer 404 on `api.hitl.sh` until they ship there; set `HITL_API_BASE=https://dev.api.hitl.sh/v1` to use them now.
+
+Both endpoints (`/mcp` and `/mcp-simple`) register these tools from [`@hitl-sh/core`](https://www.npmjs.com/package/@hitl-sh/core), the same package behind the stdio server `@hitl-sh/mcp`, so the remote and local servers expose identical tools.
 
 ## 📋 Prerequisites
 

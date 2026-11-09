@@ -7,7 +7,7 @@
  *   npx -y @hitl-sh/mcp        (with HITL_API_KEY set)
  *
  * This script runs the same server from @hitl-sh/core, so it registers the same
- * nine tools as the remote endpoints at mcp.hitl.sh.
+ * tools as the remote endpoints at mcp.hitl.sh.
  */
 
 import { startStdioMcpServer } from "@hitl-sh/core/mcp-stdio";
