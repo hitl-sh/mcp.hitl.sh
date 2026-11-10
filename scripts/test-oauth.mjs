@@ -145,9 +145,9 @@ async function testOAuth() {
     }
     console.log();
 
-    // Step 5: Test a specific tool (list_loops)
-    console.log("5️⃣  Testing list_loops tool...");
-    const listLoopsResponse = await fetch(MCP_URL, {
+    // Step 5: Test a specific tool (list_workflows)
+    console.log("5️⃣  Testing list_workflows tool...");
+    const listWorkflowsResponse = await fetch(MCP_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -159,39 +159,39 @@ async function testOAuth() {
         id: 2,
         method: "tools/call",
         params: {
-          name: "list_loops",
+          name: "list_workflows",
           arguments: {},
         },
       }),
     });
 
-    if (!listLoopsResponse.ok) {
-      console.error(`❌ list_loops failed with status ${listLoopsResponse.status}`);
-      const error = await listLoopsResponse.text();
+    if (!listWorkflowsResponse.ok) {
+      console.error(`❌ list_workflows failed with status ${listWorkflowsResponse.status}`);
+      const error = await listWorkflowsResponse.text();
       console.error(error);
     } else {
-      // Parse SSE response for list_loops
-      const loopsContentType = listLoopsResponse.headers.get("content-type");
-      let loopsData;
+      // Parse SSE response for list_workflows
+      const workflowsContentType = listWorkflowsResponse.headers.get("content-type");
+      let workflowsData;
 
-      if (loopsContentType?.includes("text/event-stream")) {
-        const text = await listLoopsResponse.text();
+      if (workflowsContentType?.includes("text/event-stream")) {
+        const text = await listWorkflowsResponse.text();
         const lines = text.split("\n");
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const jsonStr = line.substring(6);
             if (jsonStr.trim()) {
-              loopsData = JSON.parse(jsonStr);
+              workflowsData = JSON.parse(jsonStr);
               break;
             }
           }
         }
       } else {
-        loopsData = await listLoopsResponse.json();
+        workflowsData = await listWorkflowsResponse.json();
       }
 
-      console.log("✅ list_loops response:");
-      console.log(JSON.stringify(loopsData, null, 2));
+      console.log("✅ list_workflows response:");
+      console.log(JSON.stringify(workflowsData, null, 2));
     }
     console.log();
 

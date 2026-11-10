@@ -189,7 +189,7 @@ export default function HomePage() {
           }}
         >
           Connect HITL.sh Human-in-the-Loop tools to ChatGPT and other AI applications.
-          Create review requests, gather feedback, and integrate human judgment into your AI workflows.
+          Run HITL workflows that ask your humans, wait for their decision, and build and manage those workflows.
         </p>
 
         <div

@@ -47,21 +47,20 @@ The `/mcp` route is the main MCP server endpoint. It uses:
 
 - **Tool Registration**: Tools registered with `registerHitlTools` from `@hitl-sh/core/mcp-tools`
   (the same definitions the stdio server `@hitl-sh/mcp` uses; change tools in the hitl-sh/cli repo, not here):
-  - `list_loops` - List all loops owned by the authenticated account
-  - `create_request` - Create and broadcast a new request inside a loop
-  - `list_requests` - List requests with optional filters
-  - `get_request` - Retrieve full details for a single request
-  - `cancel_request` - Cancel an in-flight request
-  - `add_request_feedback` - Attach structured reviewer feedback
-  - `list_images` - List the user's mobile image library
-  - `get_image` - Fetch one image from the library by number
-  - plus one generated tool per route of `@hitl-sh/core/api-catalog`: workflows (`list_workflows`,
-    `get_workflow`, `get_workflow_input`, `run_workflow`, `list_workflow_executions`, `get_execution`,
-    `watch_execution`, writes), people, invitations, sessions, webhooks, orgs, teams, uploads.
-    Workflow routes are on dev.api.hitl.sh only for now; prod answers 404.
-- **Request source**: `create_request` sends `source` (the MCP client, e.g. `claude-code`) via
-  `resolveRequestSource` from `@hitl-sh/core/request-source`; the route calls `rememberClientInfo`
-  on every request so the `initialize` handshake's client name is remembered.
+  - Find and run: `list_workflows`, `get_workflow`, `get_workflow_input`, `run_workflow`, `get_execution`
+    (with `wait`), `list_workflow_executions`, `watch_execution`, `retry_execution`
+  - Build and manage: `create_workflow`, `update_workflow`, `delete_workflow`, `activate_workflow`,
+    `pause_workflow`, `test_workflow`, `list_workflow_revisions`, `publish_workflow_revision`
+  - Who reviews: `list_workflow_humans`, `invite_to_workflow`, `get_workflow_join_code`,
+    `create_workflow_join_code`, `delete_workflow_join_code`, `rotate_workflow_join_code`, `validate_join_code`,
+    `join_with_code`
+  - Account: `check_api_key`, `signup_status`, `confirm_signup`, `resend_signup_email`
+
+  HITL is workflows-only: the list is `WORKFLOW_TOOLS` in `@hitl-sh/core/api-catalog` (core 0.3.0+). There are no
+  loop, request, image, session, org or webhook tools any more, though the API still serves those routes.
+  Workflow routes are on dev.api.hitl.sh only for now; prod answers 404 until they ship there.
+- **Server instructions**: both routes pass core's `HITL_SERVER_INSTRUCTIONS` (the list, input, run, wait path)
+  and advertise `HITL_TOOL_NAMES` with `HITL_TOOL_DESCRIPTIONS` as capabilities.
 - `/mcp-simple` ([app/mcp-simple/route.ts](app/mcp-simple/route.ts)) registers the same tools but takes the
   raw HITL API key as the Bearer token instead of Auth0 OAuth.
 
@@ -81,14 +80,8 @@ The `/mcp` route is the main MCP server endpoint. It uses:
 
 ### Schema Validation
 
-All tool inputs are validated with Zod schemas inside `@hitl-sh/core/mcp-tools` before API calls:
-
-- `createRequestInputSchema` - Has `.superRefine()` to enforce:
-  - `timeout_seconds` required when `processing_type === "time-sensitive"`
-  - `image_url` required when `type === "image"`
-- `listRequestsInputSchema` - Validates filters and pagination params
-- `updateRequestInputSchema` - Uses `.partial()` of create schema + requires at least one field
-- `feedbackSchema` - Uses `.catchall(z.unknown())` to allow custom fields
+Each tool's Zod input schema is generated in `@hitl-sh/core/mcp-tools` from its catalog route: path arguments,
+query parameters and body fields, flat (for example `run_workflow` takes `id`, `input`, `callback_url`, `live`).
 
 ### Path Aliases
 
@@ -118,7 +111,11 @@ Example: `import { verifyAuth0Token } from "@/lib/auth0-verify"`
 The [scripts/test-hitl-mcp.mjs](scripts/test-hitl-mcp.mjs) smoke test:
 - Connects via Streamable HTTP transport
 - Lists available tools
-- Exercises `list_loops` and `list_requests` with sample params
+- Exercises `list_workflows`
+
+[scripts/test-all-tools.mjs](scripts/test-all-tools.mjs) runs the workflow path: `check_api_key`, `list_workflows`,
+`get_workflow`, `get_workflow_input`, `list_workflow_executions`, and with a workflow id also `run_workflow` and
+`get_execution`.
 - Requires `@modelcontextprotocol/sdk` as a peer dependency
 
 ## API Surface

@@ -58,17 +58,11 @@ async function main() {
     tools.tools?.map((tool) => `${tool.name} – ${tool.description ?? tool.annotations?.description ?? ""}`),
   );
 
-  const loops = await client.callTool({
-    name: "list_loops",
+  const workflows = await client.callTool({
+    name: "list_workflows",
     arguments: {},
   });
-  console.log("list_loops response:", JSON.stringify(loops, null, 2));
-
-  const requests = await client.callTool({
-    name: "list_requests",
-    arguments: { limit: 3 },
-  });
-  console.log("list_requests response:", JSON.stringify(requests, null, 2));
+  console.log("list_workflows response:", JSON.stringify(workflows, null, 2));
 }
 
 main()

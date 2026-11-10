@@ -1,9 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
-import { API_ROUTES } from "@hitl-sh/core/api-catalog";
 import { HitlClient } from "@hitl-sh/core/client";
-import { HITL_TOOL_DESCRIPTIONS, registerHitlTools } from "@hitl-sh/core/mcp-tools";
-import { rememberClientInfo, resolveRequestSource } from "@hitl-sh/core/request-source";
+import { HITL_SERVER_INSTRUCTIONS, HITL_TOOL_DESCRIPTIONS, HITL_TOOL_NAMES, registerHitlTools } from "@hitl-sh/core/mcp-tools";
 import { createMcpHandler } from "mcp-handler";
 
 const USER_AGENT = "hitl-mcp-server-simple/0.1.0";
@@ -58,26 +56,17 @@ function createClient(): HitlClient {
 
 const baseHandler = createMcpHandler(
   async (server) => {
-    registerHitlTools(server, {
-      getClient: createClient,
-      // Where the request came from (MCP client), shown to reviewers in the portal
-      resolveSource: (_extra, hint) => resolveRequestSource(currentRequest().headers, hint),
-    });
+    registerHitlTools(server, { getClient: createClient });
   },
   {
     serverInfo: {
       name: "hitl-simple",
       version: "1.0.0",
     },
+    // HITL is workflows-only: the tools are core's workflow set (find and run, build, who reviews, account).
+    instructions: HITL_SERVER_INSTRUCTIONS,
     capabilities: {
-      // Every tool registerHitlTools adds: one per catalog route (workflows, executions, ...), with the
-      // hand-written descriptions where core has them.
-      tools: Object.fromEntries(
-        API_ROUTES.filter((route) => !route.cliOnly).map((route) => [
-          route.tool,
-          { description: HITL_TOOL_DESCRIPTIONS[route.tool] ?? route.summary },
-        ]),
-      ),
+      tools: Object.fromEntries(HITL_TOOL_NAMES.map((tool) => [tool, { description: HITL_TOOL_DESCRIPTIONS[tool] }])),
     },
   },
   {
@@ -90,9 +79,6 @@ const baseHandler = createMcpHandler(
 );
 
 // Wrapper to inject Request into AsyncLocalStorage
-const handler = async (req: Request) => {
-  await rememberClientInfo(req);
-  return requestStorage.run(req, () => baseHandler(req));
-};
+const handler = async (req: Request) => requestStorage.run(req, () => baseHandler(req));
 
 export { handler as GET, handler as POST, handler as DELETE };

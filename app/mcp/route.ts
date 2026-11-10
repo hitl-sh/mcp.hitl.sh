@@ -10,10 +10,8 @@ type AuthInfo = {
   extra?: Record<string, unknown>;
 };
 
-import { API_ROUTES } from "@hitl-sh/core/api-catalog";
 import { HitlClient } from "@hitl-sh/core/client";
-import { HITL_TOOL_DESCRIPTIONS, registerHitlTools, type ToolExtra } from "@hitl-sh/core/mcp-tools";
-import { rememberClientInfo, resolveRequestSource } from "@hitl-sh/core/request-source";
+import { HITL_SERVER_INSTRUCTIONS, HITL_TOOL_DESCRIPTIONS, HITL_TOOL_NAMES, registerHitlTools, type ToolExtra } from "@hitl-sh/core/mcp-tools";
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 
 import { verifyAuth0Token } from "@/lib/auth0-verify";
@@ -65,26 +63,17 @@ function createClient(extra: ToolExtra): HitlClient {
 
 const baseHandler = createMcpHandler(
   async (server) => {
-    registerHitlTools(server, {
-      getClient: createClient,
-      // Where the request came from (MCP client), shown to reviewers in the portal
-      resolveSource: (extra, hint) => resolveRequestSource(extra.requestInfo?.headers, hint),
-    });
+    registerHitlTools(server, { getClient: createClient });
   },
   {
     serverInfo: {
       name: "hitl-mcp-server",
       version: "0.1.0",
     },
+    // HITL is workflows-only: the tools are core's workflow set (find and run, build, who reviews, account).
+    instructions: HITL_SERVER_INSTRUCTIONS,
     capabilities: {
-      // Every tool registerHitlTools adds: one per catalog route (workflows, executions, ...), with the
-      // hand-written descriptions where core has them.
-      tools: Object.fromEntries(
-        API_ROUTES.filter((route) => !route.cliOnly).map((route) => [
-          route.tool,
-          { description: HITL_TOOL_DESCRIPTIONS[route.tool] ?? route.summary },
-        ]),
-      ),
+      tools: Object.fromEntries(HITL_TOOL_NAMES.map((tool) => [tool, { description: HITL_TOOL_DESCRIPTIONS[tool] }])),
     },
   },
   {
@@ -95,16 +84,13 @@ const baseHandler = createMcpHandler(
   },
 );
 
-const handler = async (req: Request) => {
-  await rememberClientInfo(req);
-  return authStorage.run((req as { auth?: AuthInfo }).auth, () => baseHandler(req));
-};
+const handler = async (req: Request) => authStorage.run((req as { auth?: AuthInfo }).auth, () => baseHandler(req));
 
 // Use Auth0 OAuth verification for authentication
 const authHandler = withMcpAuth(handler, verifyAuth0Token, {
   required: true,  // OAuth authentication is required
   // Optional: specify required scopes
-  // requiredScopes: ["read:loops", "write:requests"],
+  // requiredScopes: ["read:workflows", "run:workflows"],
 });
 
 export { authHandler as GET, authHandler as POST, authHandler as DELETE };

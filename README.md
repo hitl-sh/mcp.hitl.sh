@@ -36,37 +36,34 @@ Choose the endpoint that matches your platform:
 
 - **OAuth 2.1 Authentication** - Secure OAuth flow with Auth0 integration
 - **Per-User API Keys** - Users can configure their own HITL.sh API keys
-- **Every HITL.sh API route as a tool** - Loops, requests, workflows, runs, people and more
+- **Workflow tools** - Find, run, build and manage HITL workflows, and choose who reviews them
 - **ChatGPT Compatible** - Works as a connector in ChatGPT
 - **Claude Desktop Support** - Standalone stdio server for local use
 - **Production Ready** - Deployed on Vercel with proper error handling
 
 ## 🛠️ Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `list_loops` | Retrieve all workflows owned by the authenticated HITL.sh account |
-| `create_request` | Create a new response within a specific workflow |
-| `list_requests` | List responses with optional filters (status, priority, loop_id, etc.) |
-| `get_request` | Fetch detailed information about a single response |
-| `cancel_request` | Cancel a pending or claimed response |
-| `add_request_feedback` | Attach structured feedback to a completed response |
-| `list_images` | List the images in the user's mobile image library |
-| `get_image` | Fetch one image from the mobile library by its number |
-
-Workflows (the newer editor's objects) have their own tools, so an agent can find a workflow, run it and follow the run:
+HITL is workflows: an agent runs a workflow, the workflow asks your humans, and the run finishes with their answer.
 
 | Tool | Description |
 |------|-------------|
 | `list_workflows` | List your workflows, newest first |
-| `get_workflow` | Get a workflow's steps, connections and input fields |
+| `get_workflow` | Get a workflow: steps, connections, input fields |
 | `get_workflow_input` | List the input fields a workflow reads, with an example body |
-| `run_workflow` | Start a run of an active workflow |
+| `run_workflow` | Start a run of an active workflow with its input |
+| `get_execution` | Get one run; with `wait`, answer as soon as it has finished |
 | `list_workflow_executions` | List a workflow's runs |
-| `get_execution` | Get one run; with `wait`, answer once it has finished |
 | `watch_execution` | Get a live-updates URL and token for a run |
+| `retry_execution` | Run a failed run again with the same input |
+| `create_workflow`, `update_workflow`, `delete_workflow` | Build and change workflows |
+| `activate_workflow`, `pause_workflow`, `test_workflow` | Make a workflow runnable, stop it, or test-run it |
+| `list_workflow_revisions`, `publish_workflow_revision` | Published versions |
+| `list_workflow_humans`, `invite_to_workflow` | Who reviews a workflow; invite people by email |
+| `get_workflow_join_code`, `create_workflow_join_code`, `delete_workflow_join_code`, `rotate_workflow_join_code` | A workflow's join code |
+| `validate_join_code`, `join_with_code` | See where a join code leads; join with it |
+| `check_api_key`, `signup_status`, `confirm_signup`, `resend_signup_email` | The key and agent signup |
 
-Writes (`create_workflow`, `update_workflow`, `activate_workflow`, ...), people and groups, invitations, sessions, webhooks, organizations, teams and uploads are covered too: one tool per route of the API catalog in `@hitl-sh/core`. The workflow, people and invitation routes are live on `dev.api.hitl.sh` and answer 404 on `api.hitl.sh` until they ship there; set `HITL_API_BASE=https://dev.api.hitl.sh/v1` to use them now.
+Loops, requests, images, sessions, people, organizations, teams, webhooks and uploads are no longer tools (the API still serves them). The workflow routes are live on `dev.api.hitl.sh` and answer 404 on `api.hitl.sh` until they ship there; set `HITL_API_BASE=https://dev.api.hitl.sh/v1` to use them now.
 
 Both endpoints (`/mcp` and `/mcp-simple`) register these tools from [`@hitl-sh/core`](https://www.npmjs.com/package/@hitl-sh/core), the same package behind the stdio server `@hitl-sh/mcp`, so the remote and local servers expose identical tools.
 

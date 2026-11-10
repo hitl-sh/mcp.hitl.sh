@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 export const metadata = {
   title: "HITL MCP Server",
-  description: "Official HITL Model Context Protocol Server",
+  description: "Official HITL Model Context Protocol Server: run and manage HITL workflows",
 };
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
