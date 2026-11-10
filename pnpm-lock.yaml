@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@hitl-sh/core':
-    specifier: 0.2.0
-    version: 0.2.0
+    specifier: 0.3.0
+    version: 0.3.0
   dotenv:
     specifier: ^17.2.3
     version: 17.2.3
@@ -57,8 +57,8 @@ packages:
     dev: false
     optional: true
 
-  /@hitl-sh/core@0.2.0:
-    resolution: {integrity: sha512-esInMpPHGhRIYPbHou63XF0eFLxm6o1VeNDV4EDK2IeEAHkOZSubkt8Xc1Sx0AWLgt9F+MYGwu+cJbZXI3VbRw==}
+  /@hitl-sh/core@0.3.0:
+    resolution: {integrity: sha512-DAme5qIAgNUVcO7BWDX6TR5GospUVgw6dJVKcmGWaSnqRRioecojqxIRwxUBhxmRKVAsJ9gHKniIHAWCWVN8og==}
     engines: {node: '>=20'}
     dependencies:
       '@modelcontextprotocol/sdk': 1.32.2(zod@3.25.51)
