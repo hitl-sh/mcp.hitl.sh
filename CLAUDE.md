@@ -83,6 +83,17 @@ The `/mcp` route is the main MCP server endpoint. It uses:
 Each tool's Zod input schema is generated in `@hitl-sh/core/mcp-tools` from its catalog route: path arguments,
 query parameters and body fields, flat (for example `run_workflow` takes `id`, `input`, `callback_url`, `live`).
 
+### Option attachments (API contract)
+
+Options of `single_select` / `multi_select` review steps (`response_config.options` / `responseConfig.options`:
+`{value, label, description?, color?}`) may carry two optional fields: `attachment_url` (must equal one of the
+request's own media URLs; the primary link) and `attachment_index` (0-based, order images, videos, audio,
+documents; used only when `attachment_url` is missing). The API answers 400 "Invalid response configuration"
+for a non-matching URL, an out-of-range or non-integer index, conflicting values, or linking without attachments.
+This repo defines no schema for options: workflow `nodes` and request `response_config` are pass-through
+(`z.array(z.unknown())` / `z.record(z.unknown())` in `@hitl-sh/core`), so the fields reach the API unchanged and
+nothing here strips them. Typed `.describe()` text for them belongs in `@hitl-sh/core` (hitl-sh/cli repo).
+
 ### Path Aliases
 
 TypeScript configured with `@/*` alias mapping to repository root:
